@@ -1,0 +1,1084 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>课程知识库 UI 设计稿预览</title>
+  <style>
+    :root {
+      --bg: #edf3f8;
+      --surface: #ffffff;
+      --surface-soft: #f8fbff;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --line: #d8e2ef;
+      --line-strong: #c5d3e5;
+      --nav: #0b1221;
+      --nav-panel: #151f33;
+      --teal: #0f766e;
+      --teal-soft: #e9fbf7;
+      --blue: #2563eb;
+      --blue-soft: #eff6ff;
+      --amber: #d97706;
+      --amber-soft: #fff7ed;
+      --rose: #e11d48;
+      --green: #16a34a;
+      --shadow: 0 14px 38px rgba(15, 23, 42, 0.07);
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      margin: 0;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: var(--nav);
+      color: #dbeafe;
+      padding: 22px 16px;
+    }
+
+    .brand {
+      align-items: center;
+      border-bottom: 1px solid #26334a;
+      display: flex;
+      gap: 12px;
+      padding-bottom: 22px;
+    }
+
+    .brand-mark {
+      align-items: center;
+      background: linear-gradient(135deg, #22d3ee, #4f46e5);
+      border-radius: 10px;
+      color: #fff;
+      display: inline-flex;
+      font-weight: 900;
+      height: 40px;
+      justify-content: center;
+      width: 40px;
+    }
+
+    .brand h1 {
+      font-size: 16px;
+      margin: 0;
+    }
+
+    .brand p,
+    .nav-note small {
+      color: #93a4bd;
+      font-size: 12px;
+      margin: 4px 0 0;
+    }
+
+    .nav-label {
+      color: #8aa0bd;
+      font-size: 12px;
+      font-weight: 900;
+      margin: 24px 0 8px;
+    }
+
+    .nav {
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav a {
+      align-items: center;
+      border-radius: 9px;
+      color: #dbeafe;
+      display: flex;
+      gap: 10px;
+      min-height: 42px;
+      padding: 10px 12px;
+      text-decoration: none;
+    }
+
+    .nav a.active {
+      background: #fff;
+      color: var(--ink);
+      font-weight: 900;
+    }
+
+    .nav-icon {
+      align-items: center;
+      border: 1px solid currentColor;
+      border-radius: 6px;
+      display: inline-flex;
+      font-size: 11px;
+      height: 20px;
+      justify-content: center;
+      opacity: 0.86;
+      width: 20px;
+    }
+
+    .nav-progress {
+      border-top: 1px solid #26334a;
+      margin-top: 26px;
+      padding-top: 18px;
+    }
+
+    .nav-progress span {
+      color: #9fb0c8;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .nav-progress strong {
+      color: #fff;
+      display: block;
+      font-size: 24px;
+      margin: 8px 0;
+    }
+
+    .progress {
+      background: #223047;
+      border-radius: 999px;
+      height: 8px;
+      overflow: hidden;
+    }
+
+    .progress i {
+      background: #5eead4;
+      display: block;
+      height: 100%;
+      width: 100%;
+    }
+
+    .nav-note {
+      background: var(--nav-panel);
+      border: 1px solid #334155;
+      border-radius: 12px;
+      margin-top: 18px;
+      padding: 14px;
+    }
+
+    .nav-note span {
+      color: #9fb0c8;
+      display: block;
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .nav-note strong {
+      color: #fff;
+      display: block;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .main {
+      min-width: 0;
+      padding: 18px 22px 30px;
+    }
+
+    .topbar {
+      align-items: center;
+      display: flex;
+      gap: 18px;
+      justify-content: space-between;
+      min-height: 54px;
+    }
+
+    .topbar h2 {
+      font-size: 20px;
+      margin: 0;
+    }
+
+    .topbar p {
+      color: #475569;
+      font-size: 13px;
+      margin: 5px 0 0;
+    }
+
+    .user-area {
+      align-items: center;
+      display: flex;
+      gap: 10px;
+      white-space: nowrap;
+    }
+
+    .status-pill {
+      align-items: center;
+      background: #ecfdf5;
+      border: 1px solid #bbf7d0;
+      border-radius: 999px;
+      color: #166534;
+      display: inline-flex;
+      font-size: 13px;
+      font-weight: 900;
+      min-height: 34px;
+      padding: 7px 12px;
+    }
+
+    .logout {
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #334155;
+      min-height: 36px;
+      padding: 7px 12px;
+    }
+
+    .hero {
+      background:
+        radial-gradient(circle at 14% 16%, rgba(20, 184, 166, 0.18), transparent 28%),
+        radial-gradient(circle at 88% 18%, rgba(37, 99, 235, 0.16), transparent 26%),
+        var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 24px;
+      grid-template-columns: minmax(0, 1fr) minmax(360px, 44%);
+      margin-top: 18px;
+      overflow: hidden;
+      padding: 24px 28px;
+    }
+
+    .eyebrow {
+      color: #0369a1;
+      display: block;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      margin-bottom: 8px;
+    }
+
+    .hero h1 {
+      font-size: 30px;
+      line-height: 1.2;
+      margin: 0 0 8px;
+    }
+
+    .hero p {
+      color: #475569;
+      font-size: 14px;
+      line-height: 1.65;
+      margin: 0;
+      max-width: 560px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .primary,
+    .secondary,
+    .ghost {
+      align-items: center;
+      border-radius: 9px;
+      cursor: pointer;
+      display: inline-flex;
+      gap: 8px;
+      justify-content: center;
+      min-height: 42px;
+      padding: 9px 14px;
+      transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+    }
+
+    .primary {
+      background: #0f172a;
+      border: 1px solid #0f172a;
+      color: #fff;
+      font-weight: 900;
+    }
+
+    .secondary {
+      background: #fff;
+      border: 1px solid var(--line-strong);
+      color: #334155;
+      font-weight: 800;
+    }
+
+    .ghost {
+      background: #f8fafc;
+      border: 1px solid transparent;
+      color: #475569;
+      font-weight: 800;
+    }
+
+    .primary:hover,
+    .secondary:hover,
+    .ghost:hover {
+      transform: translateY(-1px);
+    }
+
+    .hero-visual {
+      align-self: center;
+      background: linear-gradient(145deg, #0f172a, #17324a);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 18px;
+      box-shadow: 0 26px 60px rgba(15, 23, 42, 0.24);
+      color: #e2e8f0;
+      min-height: 238px;
+      overflow: hidden;
+      padding: 16px;
+      position: relative;
+    }
+
+    .hero-visual::before {
+      background: radial-gradient(circle, rgba(94, 234, 212, 0.28), transparent 58%);
+      content: "";
+      height: 180px;
+      position: absolute;
+      right: -48px;
+      top: -54px;
+      width: 180px;
+    }
+
+    .screen-bar {
+      align-items: center;
+      display: flex;
+      gap: 7px;
+      margin-bottom: 14px;
+    }
+
+    .screen-dot {
+      background: #94a3b8;
+      border-radius: 999px;
+      height: 8px;
+      width: 8px;
+    }
+
+    .screen-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: 0.9fr 1.1fr;
+      position: relative;
+      z-index: 1;
+    }
+
+    .mini-board,
+    .mini-map,
+    .mini-stack {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(226, 232, 240, 0.13);
+      border-radius: 13px;
+      padding: 12px;
+    }
+
+    .mini-board {
+      display: grid;
+      gap: 10px;
+      min-height: 164px;
+    }
+
+    .book-cover {
+      background:
+        linear-gradient(135deg, rgba(45, 212, 191, 0.7), rgba(59, 130, 246, 0.78)),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.18), transparent);
+      border-radius: 10px;
+      min-height: 72px;
+      position: relative;
+    }
+
+    .book-cover::after {
+      background: rgba(255, 255, 255, 0.65);
+      border-radius: 999px;
+      bottom: 14px;
+      content: "";
+      height: 8px;
+      left: 14px;
+      position: absolute;
+      width: 70%;
+    }
+
+    .tiny-lines {
+      display: grid;
+      gap: 7px;
+    }
+
+    .tiny-lines i {
+      background: rgba(226, 232, 240, 0.7);
+      border-radius: 999px;
+      display: block;
+      height: 7px;
+    }
+
+    .tiny-lines i:nth-child(2) {
+      width: 72%;
+    }
+
+    .tiny-lines i:nth-child(3) {
+      width: 48%;
+    }
+
+    .mini-map {
+      min-height: 164px;
+    }
+
+    .mini-map svg {
+      display: block;
+      height: 142px;
+      width: 100%;
+    }
+
+    .overview {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-top: 16px;
+    }
+
+    .metric {
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 10px;
+      grid-template-columns: 52px minmax(0, 1fr);
+      padding: 14px;
+    }
+
+    .metric-visual {
+      align-items: center;
+      background: var(--blue-soft);
+      border-radius: 12px;
+      color: var(--blue);
+      display: inline-flex;
+      font-size: 20px;
+      font-weight: 900;
+      height: 52px;
+      justify-content: center;
+      width: 52px;
+    }
+
+    .metric:nth-child(2) .metric-visual {
+      background: var(--teal-soft);
+      color: var(--teal);
+    }
+
+    .metric:nth-child(3) .metric-visual {
+      background: var(--amber-soft);
+      color: var(--amber);
+    }
+
+    .metric:nth-child(4) .metric-visual {
+      background: #f0fdf4;
+      color: var(--green);
+    }
+
+    .metric span {
+      color: var(--muted);
+      display: block;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 22px;
+      margin-top: 5px;
+    }
+
+    .workspace {
+      display: grid;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .builtin-grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .builtin-card {
+      background: var(--surface-soft);
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: 178px minmax(0, 1fr) auto;
+      min-height: 148px;
+      padding: 12px;
+    }
+
+    .builtin-card.active {
+      background:
+        linear-gradient(135deg, rgba(20, 184, 166, 0.12), rgba(37, 99, 235, 0.04)),
+        #fff;
+      border-color: #2dd4bf;
+    }
+
+    .builtin-cover {
+      border-radius: 12px;
+      min-height: 124px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .builtin-cover.c {
+      background:
+        radial-gradient(circle at 76% 20%, rgba(255, 255, 255, 0.46), transparent 18%),
+        linear-gradient(135deg, #164e63, #0f766e 48%, #f59e0b);
+    }
+
+    .builtin-cover.python {
+      background:
+        radial-gradient(circle at 78% 18%, rgba(255, 255, 255, 0.52), transparent 20%),
+        linear-gradient(135deg, #1d4ed8, #0ea5e9 48%, #22c55e);
+    }
+
+    .builtin-cover svg {
+      height: 100%;
+      inset: 0;
+      position: absolute;
+      width: 100%;
+    }
+
+    .builtin-cover strong {
+      bottom: 12px;
+      color: #fff;
+      font-size: 22px;
+      left: 14px;
+      position: absolute;
+      text-shadow: 0 3px 14px rgba(15, 23, 42, 0.38);
+    }
+
+    .builtin-meta {
+      align-content: center;
+      display: grid;
+    }
+
+    .builtin-card h4 {
+      font-size: 18px;
+      margin: 0 0 10px;
+    }
+
+    .builtin-card .primary {
+      align-self: end;
+      min-width: 142px;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      min-width: 0;
+      padding: 16px;
+    }
+
+    .panel-head {
+      align-items: center;
+      border-bottom: 1px solid #eef2f7;
+      display: flex;
+      gap: 12px;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+    }
+
+    .panel-title {
+      align-items: center;
+      display: flex;
+      gap: 9px;
+    }
+
+    .panel-title h3 {
+      font-size: 16px;
+      margin: 0;
+    }
+
+    .count {
+      color: #1e3a8a;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .course-grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .course-card {
+      background: var(--surface-soft);
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      display: grid;
+      gap: 12px;
+      min-height: 310px;
+      overflow: hidden;
+      padding: 12px;
+    }
+
+    .course-card.active {
+      background:
+        linear-gradient(135deg, rgba(20, 184, 166, 0.12), rgba(37, 99, 235, 0.04)),
+        #fff;
+      border-color: #2dd4bf;
+    }
+
+    .course-cover {
+      border-radius: 12px;
+      min-height: 126px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .cover-c {
+      background:
+        radial-gradient(circle at 78% 20%, rgba(255, 255, 255, 0.52), transparent 18%),
+        linear-gradient(135deg, #164e63, #0f766e 46%, #f59e0b);
+    }
+
+    .cover-python {
+      background:
+        radial-gradient(circle at 78% 16%, rgba(255, 255, 255, 0.5), transparent 20%),
+        linear-gradient(135deg, #1d4ed8, #0ea5e9 48%, #22c55e);
+    }
+
+    .cover-custom {
+      background:
+        linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(79, 70, 229, 0.82)),
+        linear-gradient(90deg, #f8fafc, #e2e8f0);
+    }
+
+    .course-cover svg {
+      height: 100%;
+      inset: 0;
+      position: absolute;
+      width: 100%;
+    }
+
+    .course-cover-label {
+      bottom: 12px;
+      color: #fff;
+      font-size: 24px;
+      font-weight: 900;
+      left: 14px;
+      position: absolute;
+      text-shadow: 0 3px 14px rgba(15, 23, 42, 0.38);
+    }
+
+    .course-top {
+      align-items: start;
+      display: grid;
+      gap: 10px;
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .course-card h4 {
+      font-size: 17px;
+      line-height: 1.35;
+      margin: 0;
+    }
+
+    .badge {
+      background: var(--blue-soft);
+      border: 1px solid #bfdbfe;
+      border-radius: 999px;
+      color: #1d4ed8;
+      display: inline-flex;
+      font-size: 12px;
+      font-weight: 900;
+      padding: 6px 10px;
+      white-space: nowrap;
+    }
+
+    .badge.current {
+      background: #ecfdf5;
+      border-color: #86efac;
+      color: #047857;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      background: #eef6ff;
+      border: 1px solid #d7e7ff;
+      border-radius: 999px;
+      color: #1e3a8a;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 6px 10px;
+    }
+
+    .course-snapshots {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .snapshot {
+      background: #fff;
+      border: 1px solid #e7eef8;
+      border-radius: 10px;
+      min-height: 58px;
+      padding: 8px;
+    }
+
+    .snapshot svg {
+      display: block;
+      height: 38px;
+      width: 100%;
+    }
+
+    .course-actions {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: 1fr 1fr;
+      margin-top: auto;
+    }
+
+    .course-actions .primary {
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 1220px) {
+      .course-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .hero,
+      .builtin-card {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 960px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .overview,
+      .builtin-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 720px) {
+      .main {
+        padding: 14px;
+      }
+
+      .topbar {
+        align-items: stretch;
+        display: grid;
+      }
+
+      .course-grid,
+      .overview,
+      .builtin-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">AI</div>
+        <div>
+          <h1>智学引擎</h1>
+          <p>多智能体学习工作台</p>
+        </div>
+      </div>
+
+      <div class="nav-label">学习流程</div>
+      <nav class="nav" aria-label="主导航">
+        <a class="active" href="#"><span class="nav-icon">KB</span>课程知识库</a>
+        <a href="#"><span class="nav-icon">SP</span>学生画像</a>
+        <a href="#"><span class="nav-icon">KG</span>知识图谱</a>
+        <a href="#"><span class="nav-icon">RT</span>学习路径</a>
+        <a href="#"><span class="nav-icon">AS</span>学习评估</a>
+      </nav>
+
+      <div class="nav-progress">
+        <span>画像完整度</span>
+        <strong>100%</strong>
+        <div class="progress"><i></i></div>
+      </div>
+
+      <div class="nav-note">
+        <span>当前课程</span>
+        <strong>Python 程序设计</strong>
+        <small>课程级数据隔离</small>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h2>个性化学习多智能体平台</h2>
+          <p>课程选择、知识库、图谱、路径、评估按课程隔离。</p>
+        </div>
+        <div class="user-area">
+          <span class="status-pill">画像已确认</span>
+          <strong>admin</strong>
+          <button class="logout" type="button">退出</button>
+        </div>
+      </header>
+
+      <section class="hero">
+        <div>
+          <span class="eyebrow">COURSE CENTER</span>
+          <h1>课程知识库</h1>
+          <p>选择当前课程，后续知识图谱、学习路径和评估都自动切换到该课程。</p>
+          <div class="hero-actions">
+            <button class="primary" type="button">+ 创建我的课程</button>
+            <button class="secondary" type="button">上传课程材料</button>
+            <button class="secondary" type="button">选择内置示例</button>
+          </div>
+        </div>
+
+        <div class="hero-visual" aria-hidden="true">
+          <div class="screen-bar">
+            <i class="screen-dot"></i>
+            <i class="screen-dot"></i>
+            <i class="screen-dot"></i>
+          </div>
+          <div class="screen-grid">
+            <div class="mini-board">
+              <div class="book-cover"></div>
+              <div class="tiny-lines">
+                <i></i>
+                <i></i>
+                <i></i>
+              </div>
+            </div>
+            <div class="mini-map">
+              <svg viewBox="0 0 260 142" role="img" aria-label="知识图谱预览">
+                <path d="M130 24 L70 64 L130 104 L190 64 Z" fill="none" stroke="#67e8f9" stroke-width="2.5" />
+                <path d="M70 64 L42 108 M70 64 L46 26 M190 64 L218 28 M190 64 L218 110 M130 104 L130 130" stroke="#93c5fd" stroke-width="2" />
+                <circle cx="130" cy="24" r="16" fill="#5eead4" />
+                <circle cx="70" cy="64" r="14" fill="#60a5fa" />
+                <circle cx="190" cy="64" r="14" fill="#fbbf24" />
+                <circle cx="130" cy="104" r="14" fill="#86efac" />
+                <circle cx="46" cy="26" r="9" fill="#c4b5fd" />
+                <circle cx="42" cy="108" r="9" fill="#fda4af" />
+                <circle cx="218" cy="28" r="9" fill="#bae6fd" />
+                <circle cx="218" cy="110" r="9" fill="#fed7aa" />
+                <circle cx="130" cy="130" r="9" fill="#bbf7d0" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="overview" aria-label="课程概览">
+        <div class="metric"><div class="metric-visual">2</div><div><span>课程数量</span><strong>C / Python</strong></div></div>
+        <div class="metric"><div class="metric-visual">Py</div><div><span>当前课程</span><strong>Python</strong></div></div>
+        <div class="metric"><div class="metric-visual">1:1</div><div><span>数据范围</span><strong>课程级</strong></div></div>
+        <div class="metric"><div class="metric-visual">AI</div><div><span>路径状态</span><strong>动态</strong></div></div>
+      </section>
+
+      <section class="workspace">
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">
+              <span class="nav-icon">C</span>
+              <h3>我的课程</h3>
+            </div>
+            <span class="count">选择一门作为当前课程</span>
+          </div>
+
+          <div class="course-grid">
+            <article class="course-card">
+              <div class="course-cover cover-c">
+                <svg viewBox="0 0 360 126" aria-hidden="true">
+                  <path d="M28 94 C80 54, 120 108, 176 60 S280 42, 332 84" fill="none" stroke="rgba(255,255,255,.68)" stroke-width="5" />
+                  <rect x="30" y="24" width="84" height="54" rx="9" fill="rgba(255,255,255,.2)" />
+                  <rect x="132" y="34" width="70" height="12" rx="6" fill="rgba(255,255,255,.55)" />
+                  <rect x="132" y="56" width="118" height="12" rx="6" fill="rgba(255,255,255,.32)" />
+                  <circle cx="292" cy="42" r="22" fill="rgba(255,255,255,.22)" />
+                </svg>
+                <div class="course-cover-label">C 语言</div>
+              </div>
+              <div class="course-top">
+                <h4>C语言程序设计</h4>
+                <span class="badge">待选入</span>
+              </div>
+              <div class="tag-row">
+                <span class="tag">指针</span>
+                <span class="tag">数组</span>
+                <span class="tag">函数</span>
+                <span class="tag">结构体</span>
+              </div>
+              <div class="course-snapshots" aria-hidden="true">
+                <div class="snapshot">
+                  <svg viewBox="0 0 96 38"><rect x="6" y="8" width="84" height="6" rx="3" fill="#bae6fd"/><rect x="6" y="22" width="54" height="6" rx="3" fill="#fed7aa"/></svg>
+                </div>
+                <div class="snapshot">
+                  <svg viewBox="0 0 96 38"><circle cx="20" cy="19" r="8" fill="#cbd5e1"/><circle cx="48" cy="11" r="7" fill="#f87171"/><circle cx="72" cy="25" r="8" fill="#fb923c"/><path d="M27 17 L42 12 M55 14 L66 22" stroke="#94a3b8" /></svg>
+                </div>
+                <div class="snapshot">
+                  <svg viewBox="0 0 96 38"><path d="M10 29 C24 8, 42 34, 58 14 S78 8, 88 25" fill="none" stroke="#0f766e" stroke-width="4"/></svg>
+                </div>
+              </div>
+              <div class="course-actions">
+                <button class="primary" type="button">用 C 内置库</button>
+                <button class="secondary" type="button">设为当前</button>
+                <button class="secondary" type="button">知识库</button>
+                <button class="secondary" type="button">路径</button>
+              </div>
+            </article>
+
+            <article class="course-card active">
+              <div class="course-cover cover-python">
+                <svg viewBox="0 0 360 126" aria-hidden="true">
+                  <rect x="24" y="18" width="118" height="82" rx="16" fill="rgba(255,255,255,.22)" />
+                  <rect x="54" y="36" width="176" height="10" rx="5" fill="rgba(255,255,255,.56)" />
+                  <rect x="54" y="58" width="220" height="10" rx="5" fill="rgba(255,255,255,.34)" />
+                  <rect x="54" y="80" width="142" height="10" rx="5" fill="rgba(255,255,255,.34)" />
+                  <path d="M262 88 C296 54, 310 36, 340 28" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="5" />
+                  <circle cx="292" cy="68" r="18" fill="rgba(255,255,255,.2)" />
+                </svg>
+                <div class="course-cover-label">Python</div>
+              </div>
+              <div class="course-top">
+                <h4>Python程序设计</h4>
+                <span class="badge current">当前课程</span>
+              </div>
+              <div class="tag-row">
+                <span class="tag">基础语法</span>
+                <span class="tag">函数</span>
+                <span class="tag">数据结构</span>
+                <span class="tag">项目实践</span>
+              </div>
+              <div class="course-snapshots" aria-hidden="true">
+                <div class="snapshot">
+                  <svg viewBox="0 0 96 38"><rect x="8" y="8" width="34" height="22" rx="6" fill="#bfdbfe"/><rect x="50" y="8" width="38" height="22" rx="6" fill="#bbf7d0"/></svg>
+                </div>
+                <div class="snapshot">
+                  <svg viewBox="0 0 96 38"><circle cx="48" cy="19" r="10" fill="#5eead4"/><circle cx="22" cy="11" r="7" fill="#d1d5db"/><circle cx="22" cy="27" r="7" fill="#d1d5db"/><circle cx="74" cy="19" r="7" fill="#fb923c"/><path d="M29 13 L39 17 M29 25 L39 21 M58 19 L67 19" stroke="#94a3b8"/></svg>
+                </div>
+                <div class="snapshot">
+                  <svg viewBox="0 0 96 38"><rect x="9" y="9" width="78" height="5" rx="3" fill="#0ea5e9"/><rect x="9" y="20" width="56" height="5" rx="3" fill="#22c55e"/></svg>
+                </div>
+              </div>
+              <div class="course-actions">
+                <button class="primary" type="button">进入课程</button>
+                <button class="ghost" type="button">当前课程</button>
+                <button class="secondary" type="button">知识库</button>
+                <button class="secondary" type="button">路径</button>
+              </div>
+            </article>
+
+            <article class="course-card">
+              <div class="course-cover cover-custom">
+                <svg viewBox="0 0 360 126" aria-hidden="true">
+                  <rect x="32" y="22" width="72" height="82" rx="12" fill="rgba(255,255,255,.18)" />
+                  <rect x="122" y="30" width="96" height="16" rx="8" fill="rgba(255,255,255,.42)" />
+                  <rect x="122" y="58" width="156" height="14" rx="7" fill="rgba(255,255,255,.24)" />
+                  <rect x="122" y="84" width="118" height="14" rx="7" fill="rgba(255,255,255,.24)" />
+                  <path d="M280 90 L314 56 L342 72" fill="none" stroke="#67e8f9" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <div class="course-cover-label">自定义</div>
+              </div>
+              <div class="course-top">
+                <h4>我的课程知识库</h4>
+                <span class="badge">draft</span>
+              </div>
+              <div class="tag-row">
+                <span class="tag">自建课程</span>
+                <span class="tag">待完善</span>
+                <span class="tag">2026/5/19</span>
+              </div>
+              <div class="course-snapshots" aria-hidden="true">
+                <div class="snapshot">
+                  <svg viewBox="0 0 96 38"><rect x="14" y="7" width="24" height="24" rx="5" fill="#c4b5fd"/><rect x="46" y="7" width="36" height="6" rx="3" fill="#cbd5e1"/><rect x="46" y="21" width="26" height="6" rx="3" fill="#e2e8f0"/></svg>
+                </div>
+                <div class="snapshot">
+                  <svg viewBox="0 0 96 38"><path d="M14 26 L34 12 L52 24 L80 10" fill="none" stroke="#38bdf8" stroke-width="4"/><circle cx="80" cy="10" r="5" fill="#22c55e"/></svg>
+                </div>
+                <div class="snapshot">
+                  <svg viewBox="0 0 96 38"><rect x="10" y="9" width="76" height="20" rx="10" fill="#e0f2fe"/><rect x="14" y="13" width="42" height="12" rx="6" fill="#0284c7"/></svg>
+                </div>
+              </div>
+              <div class="course-actions">
+                <button class="primary" type="button">进入课程</button>
+                <button class="secondary" type="button">设为当前</button>
+                <button class="secondary" type="button">知识库</button>
+                <button class="secondary" type="button">路径</button>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">
+              <span class="nav-icon">IN</span>
+              <h3>内置示例知识库</h3>
+            </div>
+            <span class="count">选择课程后再确认构建</span>
+          </div>
+
+          <div class="builtin-grid">
+            <article class="builtin-card">
+              <div class="builtin-cover c" aria-hidden="true">
+                <svg viewBox="0 0 220 124">
+                  <path d="M20 88 C48 48, 84 98, 116 54 S170 34, 202 76" fill="none" stroke="rgba(255,255,255,.72)" stroke-width="5" />
+                  <rect x="28" y="22" width="54" height="46" rx="9" fill="rgba(255,255,255,.2)" />
+                  <rect x="100" y="30" width="70" height="10" rx="5" fill="rgba(255,255,255,.52)" />
+                  <rect x="100" y="52" width="92" height="10" rx="5" fill="rgba(255,255,255,.32)" />
+                </svg>
+                <strong>C 语言</strong>
+              </div>
+              <div class="builtin-meta">
+                <h4>C语言程序设计</h4>
+                <div class="tag-row">
+                  <span class="tag">教材示例</span>
+                  <span class="tag">知识图谱</span>
+                  <span class="tag">Milvus 索引</span>
+                </div>
+              </div>
+              <button class="primary" type="button">使用 C 示例</button>
+            </article>
+
+            <article class="builtin-card active">
+              <div class="builtin-cover python" aria-hidden="true">
+                <svg viewBox="0 0 220 124">
+                  <rect x="24" y="18" width="76" height="74" rx="14" fill="rgba(255,255,255,.22)" />
+                  <rect x="52" y="34" width="124" height="10" rx="5" fill="rgba(255,255,255,.56)" />
+                  <rect x="52" y="56" width="150" height="10" rx="5" fill="rgba(255,255,255,.34)" />
+                  <path d="M146 90 C170 54, 188 42, 210 30" fill="none" stroke="rgba(255,255,255,.72)" stroke-width="5" />
+                </svg>
+                <strong>Python</strong>
+              </div>
+              <div class="builtin-meta">
+                <h4>Python程序设计</h4>
+                <div class="tag-row">
+                  <span class="tag">默认示例</span>
+                  <span class="tag">本地知识库</span>
+                  <span class="tag">图谱路径</span>
+                </div>
+              </div>
+              <button class="primary" type="button">使用 Python 示例</button>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

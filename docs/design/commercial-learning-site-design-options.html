@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>个性化学习平台商业级前端设计方案</title>
+  <style>
+    :root {
+      --slate-950: #020617;
+      --slate-900: #0f172a;
+      --slate-800: #1e293b;
+      --slate-700: #334155;
+      --slate-500: #64748b;
+      --slate-300: #cbd5e1;
+      --slate-200: #e2e8f0;
+      --slate-100: #f1f5f9;
+      --slate-50: #f8fafc;
+      --blue-600: #2563eb;
+      --cyan-500: #06b6d4;
+      --green-500: #22c55e;
+      --orange-500: #f59e0b;
+      --red-500: #ef4444;
+      font-family: Inter, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #eef2f7;
+      color: var(--slate-900);
+      line-height: 1.45;
+    }
+    .cover,
+    .option {
+      width: 1440px;
+      min-height: 1024px;
+      margin: 0 auto 28px;
+      overflow: hidden;
+      background: white;
+      position: relative;
+      page-break-after: always;
+    }
+    .cover {
+      padding: 70px 76px;
+      background:
+        radial-gradient(circle at 82% 12%, rgba(37, 99, 235, .22), transparent 30%),
+        linear-gradient(135deg, #f8fafc 0%, #edf4ff 48%, #f8fafc 100%);
+    }
+    .cover h1 {
+      margin: 0;
+      max-width: 760px;
+      font-size: 56px;
+      letter-spacing: 0;
+      line-height: 1.05;
+    }
+    .cover p {
+      max-width: 760px;
+      color: var(--slate-600, #475569);
+      font-size: 19px;
+      margin: 22px 0 0;
+    }
+    .cover-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+      margin-top: 54px;
+    }
+    .cover-card {
+      min-height: 250px;
+      border: 1px solid rgba(148, 163, 184, .35);
+      border-radius: 18px;
+      padding: 22px;
+      background: rgba(255,255,255,.78);
+      box-shadow: 0 18px 55px rgba(15,23,42,.08);
+    }
+    .cover-card span { color: var(--blue-600); font-size: 12px; font-weight: 800; text-transform: uppercase; }
+    .cover-card h3 { margin: 12px 0 10px; font-size: 21px; }
+    .cover-card p { margin: 0; font-size: 13px; line-height: 1.7; color: #475569; }
+    .cover-note {
+      position: absolute;
+      bottom: 54px;
+      left: 76px;
+      right: 76px;
+      padding-top: 22px;
+      border-top: 1px solid rgba(148,163,184,.35);
+      color: #475569;
+      font-size: 15px;
+    }
+
+    .option-header {
+      height: 92px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      border-bottom: 1px solid rgba(148, 163, 184, .22);
+    }
+    .option-title span {
+      display: block;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--accent, #2563eb);
+    }
+    .option-title h2 {
+      margin: 4px 0 0;
+      font-size: 27px;
+      letter-spacing: 0;
+    }
+    .option-header p {
+      max-width: 610px;
+      margin: 0;
+      color: var(--muted-text, #64748b);
+      font-size: 14px;
+      text-align: right;
+    }
+    .product-shell {
+      display: grid;
+      grid-template-columns: 224px 1fr;
+      min-height: 932px;
+    }
+    .side {
+      padding: 26px 18px;
+      background: var(--side-bg, #0f172a);
+      color: var(--side-fg, white);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: var(--accent, #2563eb);
+      color: white;
+      font-weight: 900;
+    }
+    .brand strong { display: block; font-size: 15px; }
+    .brand small { display: block; opacity: .66; margin-top: 2px; }
+    .nav-item {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      height: 42px;
+      padding: 0 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      margin-bottom: 8px;
+      color: var(--side-muted, rgba(255,255,255,.72));
+    }
+    .nav-item.active {
+      color: var(--nav-active-fg, #0f172a);
+      background: var(--nav-active-bg, white);
+      font-weight: 800;
+    }
+    .nav-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+      border: 2px solid currentColor;
+      opacity: .78;
+    }
+    .side-card {
+      margin-top: 30px;
+      padding: 16px;
+      border-radius: 14px;
+      background: var(--side-card-bg, rgba(255,255,255,.08));
+      border: 1px solid var(--side-card-border, rgba(255,255,255,.12));
+    }
+    .side-card small { opacity: .7; display: block; }
+    .side-card strong { display: block; margin: 8px 0; font-size: 16px; }
+    .bar {
+      height: 8px;
+      border-radius: 99px;
+      background: rgba(255,255,255,.14);
+      overflow: hidden;
+    }
+    .bar i {
+      display: block;
+      height: 100%;
+      width: 78%;
+      border-radius: inherit;
+      background: var(--accent, #2563eb);
+    }
+    .main {
+      padding: 26px;
+      background: var(--main-bg, #f8fafc);
+    }
+    .top-row {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr .8fr .8fr;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .metric,
+    .panel,
+    .classroom,
+    .graph-card,
+    .path-card {
+      background: var(--surface, #fff);
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: var(--radius, 12px);
+      box-shadow: var(--shadow, 0 12px 30px rgba(15, 23, 42, .06));
+    }
+    .metric {
+      min-height: 116px;
+      padding: 18px;
+    }
+    .metric small { color: var(--muted-text, #64748b); display: block; }
+    .metric strong { display: block; font-size: 28px; margin: 12px 0 4px; }
+    .metric .status { color: var(--accent, #2563eb); font-weight: 800; font-size: 12px; }
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: 1.08fr .92fr;
+      gap: 16px;
+    }
+    .panel {
+      padding: 18px;
+      min-height: 300px;
+    }
+    .panel h3,
+    .classroom h3 {
+      margin: 0 0 14px;
+      font-size: 17px;
+    }
+    .pipeline {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .pipe-step {
+      padding: 10px 8px;
+      border-radius: 10px;
+      background: var(--soft, #f1f5f9);
+      font-size: 12px;
+      color: var(--muted-text, #64748b);
+      border: 1px solid var(--border, #e2e8f0);
+      min-height: 54px;
+    }
+    .pipe-step b { display: block; color: var(--foreground, #0f172a); margin-bottom: 3px; }
+    .graph-area {
+      height: 270px;
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+      background: var(--graph-bg, #f8fafc);
+      border: 1px solid var(--border, #e2e8f0);
+    }
+    .edge {
+      position: absolute;
+      height: 2px;
+      background: var(--edge, #cbd5e1);
+      transform-origin: left center;
+    }
+    .node {
+      position: absolute;
+      width: 34px;
+      height: 34px;
+      border-radius: 99px;
+      border: 3px solid white;
+      box-shadow: 0 8px 18px rgba(15,23,42,.18);
+    }
+    .node.root { width: 52px; height: 52px; background: var(--accent, #2563eb); }
+    .node.unlearned { background: #94a3b8; }
+    .node.weak { background: #ef4444; }
+    .node.basic { background: #f59e0b; }
+    .node.good { background: #86efac; }
+    .node.master { background: #16a34a; }
+    .path-map {
+      position: relative;
+      height: 360px;
+      overflow: hidden;
+      border-radius: 12px;
+      background: var(--path-bg, linear-gradient(180deg,#f8fafc,#eff6ff));
+      border: 1px solid var(--border, #e2e8f0);
+    }
+    .path-line {
+      position: absolute;
+      left: 50%;
+      top: 24px;
+      width: 4px;
+      height: 315px;
+      border-radius: 99px;
+      background: repeating-linear-gradient(to bottom, var(--edge, #cbd5e1), var(--edge, #cbd5e1) 12px, transparent 12px, transparent 24px);
+    }
+    .quest {
+      position: absolute;
+      width: 238px;
+      min-height: 96px;
+      padding: 13px;
+      border-radius: 12px;
+      border: 1px solid var(--border, #e2e8f0);
+      background: var(--surface, white);
+      box-shadow: var(--shadow, 0 12px 30px rgba(15,23,42,.06));
+      font-size: 12px;
+    }
+    .quest b { display: block; font-size: 14px; margin-bottom: 8px; }
+    .quest.current { border-color: var(--red-500); box-shadow: 0 18px 40px rgba(239,68,68,.18); }
+    .quest.remedial { border-color: var(--orange-500); }
+    .pin {
+      position: absolute;
+      width: 54px;
+      height: 54px;
+      border-radius: 99px;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-weight: 900;
+      background: var(--accent, #2563eb);
+      box-shadow: 0 15px 32px rgba(37,99,235,.28);
+    }
+    .classroom {
+      margin-top: 16px;
+      padding: 18px;
+    }
+    .classroom-grid {
+      display: grid;
+      grid-template-columns: 1.5fr .9fr;
+      gap: 14px;
+    }
+    .stage {
+      min-height: 246px;
+      border-radius: 14px;
+      background: var(--classroom-bg, #0f172a);
+      color: white;
+      padding: 22px;
+      position: relative;
+      overflow: hidden;
+    }
+    .stage::after {
+      content: "";
+      position: absolute;
+      inset: auto 18px 18px auto;
+      width: 190px;
+      height: 120px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.24);
+      background: rgba(255,255,255,.08);
+    }
+    .stage h4 { margin: 0 0 10px; font-size: 24px; }
+    .stage p { max-width: 480px; color: rgba(255,255,255,.72); }
+    .timeline {
+      display: grid;
+      gap: 9px;
+    }
+    .event {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 11px;
+      border-radius: 10px;
+      background: var(--soft, #f1f5f9);
+      border: 1px solid var(--border, #e2e8f0);
+      font-size: 12px;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 99px;
+      background: var(--accent, #2563eb);
+      flex: 0 0 auto;
+    }
+    .design-notes {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .note {
+      padding: 14px;
+      border-radius: 12px;
+      background: var(--surface, white);
+      border: 1px solid var(--border, #e2e8f0);
+      min-height: 104px;
+    }
+    .note b { display: block; margin-bottom: 8px; }
+    .note p { margin: 0; color: var(--muted-text, #64748b); font-size: 12px; }
+
+    .enterprise {
+      --accent: #2563eb;
+      --side-bg: #0f172a;
+      --main-bg: #f8fafc;
+      --surface: #fff;
+      --border: #dbe4f0;
+      --soft: #eef4ff;
+      --radius: 10px;
+    }
+    .command {
+      --accent: #06b6d4;
+      --side-bg: #020617;
+      --main-bg: #07111f;
+      --surface: #0f1b2e;
+      --foreground: #e5f2ff;
+      --muted-text: #9db5ca;
+      --border: rgba(125, 211, 252, .18);
+      --soft: rgba(14, 165, 233, .12);
+      --graph-bg: #091627;
+      --path-bg: linear-gradient(180deg,#07111f,#0f1b2e);
+      --classroom-bg: #030712;
+      color: #e5f2ff;
+    }
+    .command .option-header,
+    .command .main { color: #e5f2ff; }
+    .command .metric strong,
+    .command .pipe-step b,
+    .command .quest b,
+    .command .note b,
+    .command .panel h3,
+    .command .classroom h3,
+    .command .option-title h2 { color: #f8fafc; }
+    .academy {
+      --accent: #2563eb;
+      --side-bg: #1d4ed8;
+      --main-bg: #eff6ff;
+      --surface: #ffffff;
+      --border: #bfdbfe;
+      --soft: #dbeafe;
+      --radius: 16px;
+      --shadow: 0 18px 38px rgba(37,99,235,.10);
+    }
+    .game {
+      --accent: #22c55e;
+      --side-bg: #1e1b4b;
+      --main-bg: #f5f3ff;
+      --surface: #ffffff;
+      --border: #ddd6fe;
+      --soft: #ede9fe;
+      --path-bg: radial-gradient(circle at 28% 24%, #dcfce7, transparent 22%), linear-gradient(180deg,#f5f3ff,#eef2ff);
+      --radius: 18px;
+      --shadow: 0 20px 46px rgba(76,29,149,.12);
+    }
+    .lab {
+      --accent: #0ea5e9;
+      --side-bg: #18181b;
+      --main-bg: #fafafa;
+      --surface: #ffffff;
+      --border: #e4e4e7;
+      --soft: #f4f4f5;
+      --radius: 6px;
+      --shadow: none;
+      --classroom-bg: #18181b;
+    }
+
+    .command .side { border-right: 1px solid rgba(125,211,252,.16); }
+    .academy .brand-mark { border-radius: 15px; }
+    .game .pin { box-shadow: 0 16px 36px rgba(34,197,94,.32); }
+    .lab .metric, .lab .panel, .lab .classroom, .lab .quest, .lab .note { box-shadow: none; }
+
+    @media print {
+      body { background: white; }
+      .cover, .option { margin: 0; width: 100%; min-height: 100vh; }
+    }
+  </style>
+</head>
+<body>
+  <section class="cover">
+    <h1>个性化学习平台商业级前端设计方案</h1>
+    <p>本设计稿在不替换当前任何功能的前提下，提供 5 套成熟学习网站视觉方案。所有方案都覆盖当前项目的真实流程：课程选择、课程专属画像、知识库、知识图谱、动态学习路径、OpenMAIC 标准课堂、多智能体资源生成和评估闭环。</p>
+    <div class="cover-grid">
+      <div class="cover-card"><span>Option 01</span><h3>Enterprise Learning OS</h3><p>稳定、可信、企业级。适合比赛正式演示和商业化汇报。</p></div>
+      <div class="cover-card"><span>Option 02</span><h3>AI Command Center</h3><p>突出 Agentic RAG、多智能体、知识图谱约束和闭环审计。</p></div>
+      <div class="cover-card"><span>Option 03</span><h3>Modern Student Academy</h3><p>清爽亲和，学生接受度高，适合长期学习产品。</p></div>
+      <div class="cover-card"><span>Option 04</span><h3>Game-Based Mastery Map</h3><p>突出闯关地图、补救支线和掌握度颜色反馈。</p></div>
+      <div class="cover-card"><span>Option 05</span><h3>Premium Knowledge Lab</h3><p>强调本地知识库、证据溯源、知识图谱和研究型工作台。</p></div>
+    </div>
+    <div class="cover-note">推荐组合：全局采用 Option 01 的企业级信息架构，学习页吸收 Option 02 的 AI 闭环表达，学习路径页吸收 Option 04 的关卡地图表现。</div>
+  </section>
+
+  <section id="option-1" class="option enterprise">
+    <div class="option-header">
+      <div class="option-title"><span>Option 01</span><h2>Enterprise Learning OS</h2></div>
+      <p>企业培训与在线教育 SaaS 风格。深色侧边栏、浅色工作台、清晰数据面板，强调稳定、可信、可运营。</p>
+    </div>
+    <div class="product-shell">
+      <aside class="side">
+        <div class="brand"><div class="brand-mark">AI</div><div><strong>智学引擎</strong><small>企业级学习工作台</small></div></div>
+        <div class="nav-item"><span class="nav-icon"></span>课程知识库</div>
+        <div class="nav-item"><span class="nav-icon"></span>学生画像</div>
+        <div class="nav-item active"><span class="nav-icon"></span>知识图谱</div>
+        <div class="nav-item"><span class="nav-icon"></span>学习路径</div>
+        <div class="nav-item"><span class="nav-icon"></span>学习评估</div>
+        <div class="side-card"><small>当前课程</small><strong>Python 程序设计</strong><small>画像完整度</small><div class="bar"><i></i></div></div>
+      </aside>
+      <main class="main">
+        <div class="top-row">
+          <div class="metric"><small>课程上下文</small><strong>Python 程序设计</strong><span class="status">课程数据已隔离</span></div>
+          <div class="metric"><small>知识图谱</small><strong>100%</strong><span class="status">Neo4j 已同步</span></div>
+          <div class="metric"><small>本周计划</small><strong>420min</strong><span class="status">画像驱动排期</span></div>
+          <div class="metric"><small>掌握节点</small><strong>3 / 12</strong><span class="status">含补救支线</span></div>
+        </div>
+        <div class="workspace-grid">
+          <div class="panel">
+            <h3>课程知识库流水线</h3>
+            <div class="pipeline">
+              <div class="pipe-step"><b>上传</b>PDF/PPTX</div><div class="pipe-step"><b>解析</b>MinerU</div><div class="pipe-step"><b>分块</b>MySQL</div><div class="pipe-step"><b>向量</b>Milvus</div><div class="pipe-step"><b>图谱</b>Neo4j</div>
+            </div>
+            <div class="graph-area">
+              <span class="edge" style="left:310px;top:135px;width:130px;transform:rotate(-18deg)"></span><span class="edge" style="left:310px;top:145px;width:145px;transform:rotate(20deg)"></span><span class="edge" style="left:450px;top:108px;width:110px;transform:rotate(-8deg)"></span><span class="edge" style="left:458px;top:174px;width:110px;transform:rotate(14deg)"></span>
+              <span class="node root" style="left:280px;top:118px"></span><span class="node weak" style="left:435px;top:86px"></span><span class="node basic" style="left:455px;top:167px"></span><span class="node good" style="left:570px;top:78px"></span><span class="node unlearned" style="left:585px;top:190px"></span><span class="node master" style="left:690px;top:130px"></span>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>主线任务地图</h3>
+            <div class="path-map">
+              <div class="path-line"></div>
+              <div class="quest current" style="left:82px;top:38px"><b>1.1.1 Python语言特点</b>严重弱项，今日任务 61 分钟</div>
+              <div class="pin" style="left:282px;top:70px">1</div>
+              <div class="quest remedial" style="right:78px;top:142px"><b>薄弱点专项</b>补全代码输出与概念理解</div>
+              <div class="pin" style="left:282px;top:172px;background:#f59e0b">2</div>
+              <div class="quest" style="left:82px;top:250px"><b>1.1.2 应用领域</b>达标后继续主线任务</div>
+              <div class="pin" style="left:282px;top:272px;background:#94a3b8">3</div>
+            </div>
+          </div>
+        </div>
+        <div class="classroom">
+          <h3>OpenMAIC 标准课堂与多智能体闭环</h3>
+          <div class="classroom-grid">
+            <div class="stage"><h4>在线课堂：Python 语言特点</h4><p>根据 MySQL 原文证据、Milvus 召回和 Neo4j 图谱约束生成课堂大纲，支持讲解、思维导图、代码练习和评估。</p></div>
+            <div class="timeline"><div class="event"><i class="dot"></i>分析规划 Agent</div><div class="event"><i class="dot"></i>检索证据 Agent</div><div class="event"><i class="dot"></i>资源生成 Agent</div><div class="event"><i class="dot"></i>校验/辩论/决策</div></div>
+          </div>
+        </div>
+        <div class="design-notes"><div class="note"><b>适用场景</b><p>正式答辩、商业化原型、企业学习系统。</p></div><div class="note"><b>优势</b><p>信息层级稳定，功能完整度强，评审容易理解。</p></div><div class="note"><b>注意</b><p>避免过度装饰，保持高密度但清晰。</p></div></div>
+      </main>
+    </div>
+  </section>
+
+  <section id="option-2" class="option command">
+    <div class="option-header">
+      <div class="option-title"><span>Option 02</span><h2>AI Learning Command Center</h2></div>
+      <p>AI 指挥中心风格。强调多智能体编排、Agentic RAG、图谱约束、证据溯源和决策报告。</p>
+    </div>
+    <div class="product-shell">
+      <aside class="side">
+        <div class="brand"><div class="brand-mark">AG</div><div><strong>Agent Studio</strong><small>学习智能体控制台</small></div></div>
+        <div class="nav-item"><span class="nav-icon"></span>Course Data</div><div class="nav-item"><span class="nav-icon"></span>Profile Core</div><div class="nav-item active"><span class="nav-icon"></span>Graph Guard</div><div class="nav-item"><span class="nav-icon"></span>Path Engine</div><div class="nav-item"><span class="nav-icon"></span>Assessment</div>
+        <div class="side-card"><small>Closed Loop</small><strong>Analyze → Retrieve → Generate → Verify</strong><small>Decision: accepted</small><div class="bar"><i></i></div></div>
+      </aside>
+      <main class="main">
+        <div class="top-row">
+          <div class="metric"><small>Agentic RAG</small><strong>vector_to_mysql</strong><span class="status">Milvus 召回，MySQL 回表</span></div><div class="metric"><small>Graph Constraints</small><strong>6</strong><span class="status">父章/前置/后续</span></div><div class="metric"><small>Verification</small><strong>0.91</strong><span class="status">事实校验</span></div><div class="metric"><small>Debate</small><strong>通过</strong><span class="status">交叉验证</span></div>
+        </div>
+        <div class="workspace-grid">
+          <div class="panel"><h3>知识图谱约束</h3><div class="graph-area"><span class="edge" style="left:230px;top:120px;width:170px;transform:rotate(-20deg)"></span><span class="edge" style="left:230px;top:150px;width:190px;transform:rotate(22deg)"></span><span class="edge" style="left:420px;top:92px;width:160px;transform:rotate(10deg)"></span><span class="edge" style="left:430px;top:190px;width:150px;transform:rotate(-12deg)"></span><span class="node root" style="left:210px;top:112px"></span><span class="node weak" style="left:405px;top:74px"></span><span class="node basic" style="left:430px;top:185px"></span><span class="node good" style="left:585px;top:100px"></span><span class="node unlearned" style="left:610px;top:185px"></span></div></div>
+          <div class="panel"><h3>智能体事件流</h3><div class="timeline"><div class="event"><i class="dot"></i>Planner: 生成资源蓝图</div><div class="event"><i class="dot"></i>Retriever: Milvus 召回 8 个候选</div><div class="event"><i class="dot"></i>Verifier: 证据覆盖率 91%</div><div class="event"><i class="dot"></i>Debater: 未发现越界知识</div><div class="event"><i class="dot"></i>Decision: accepted</div></div></div>
+        </div>
+        <div class="classroom"><h3>OpenMAIC AI Classroom</h3><div class="classroom-grid"><div class="stage"><h4>标准课堂生成中</h4><p>课堂大纲来自本地知识库证据和图谱约束，包含 3D 可视化/代码实验/课堂测试策略。</p></div><div class="timeline"><div class="event"><i class="dot"></i>文档 Agent</div><div class="event"><i class="dot"></i>思维导图 Agent</div><div class="event"><i class="dot"></i>代码练习 Agent</div><div class="event"><i class="dot"></i>评估 Agent</div></div></div></div>
+        <div class="design-notes"><div class="note"><b>适用场景</b><p>突出项目技术壁垒和赛题要求。</p></div><div class="note"><b>优势</b><p>多智能体协同闭环可视化强。</p></div><div class="note"><b>注意</b><p>控制术语密度，避免学生端压力过大。</p></div></div>
+      </main>
+    </div>
+  </section>
+
+  <section id="option-3" class="option academy">
+    <div class="option-header">
+      <div class="option-title"><span>Option 03</span><h2>Modern Student Academy</h2></div>
+      <p>面向学生的现代学院风格。更轻、更亲和，适合长期学习体验和课程产品化。</p>
+    </div>
+    <div class="product-shell">
+      <aside class="side">
+        <div class="brand"><div class="brand-mark">学</div><div><strong>智能学院</strong><small>Python / C语言</small></div></div>
+        <div class="nav-item"><span class="nav-icon"></span>我的课程</div><div class="nav-item active"><span class="nav-icon"></span>知识图谱</div><div class="nav-item"><span class="nav-icon"></span>今日学习</div><div class="nav-item"><span class="nav-icon"></span>课堂笔记</div><div class="nav-item"><span class="nav-icon"></span>评估报告</div>
+        <div class="side-card"><small>学习节奏</small><strong>每天 1 小时</strong><small>今日任务进行中</small><div class="bar"><i></i></div></div>
+      </aside>
+      <main class="main">
+        <div class="top-row">
+          <div class="metric"><small>欢迎回来</small><strong>小明</strong><span class="status">今日继续 Python 概述</span></div><div class="metric"><small>画像完整度</small><strong>96%</strong><span class="status">持续更新</span></div><div class="metric"><small>今日任务</small><strong>1</strong><span class="status">必须当天完成</span></div><div class="metric"><small>可继续学习</small><strong>3关</strong><span class="status">额外时间开放</span></div>
+        </div>
+        <div class="workspace-grid">
+          <div class="panel"><h3>课程知识图谱</h3><div class="graph-area"><span class="edge" style="left:300px;top:138px;width:150px;transform:rotate(-18deg)"></span><span class="edge" style="left:300px;top:146px;width:150px;transform:rotate(18deg)"></span><span class="edge" style="left:455px;top:105px;width:120px;transform:rotate(10deg)"></span><span class="node root" style="left:275px;top:120px"></span><span class="node weak" style="left:445px;top:92px"></span><span class="node basic" style="left:450px;top:170px"></span><span class="node good" style="left:588px;top:122px"></span><span class="node unlearned" style="left:650px;top:190px"></span></div></div>
+          <div class="panel"><h3>学习路径</h3><div class="path-map"><div class="path-line"></div><div class="quest current" style="left:72px;top:36px"><b>今日任务</b>1.1.1 Python语言特点</div><div class="pin" style="left:282px;top:68px">1</div><div class="quest remedial" style="right:72px;top:148px"><b>薄弱点专项</b>课堂测试未达标后自动插入</div><div class="pin" style="left:282px;top:176px;background:#f59e0b">2</div><div class="quest" style="left:72px;top:260px"><b>后续关卡</b>1.1.2 Python应用领域</div><div class="pin" style="left:282px;top:282px;background:#94a3b8">3</div></div></div>
+        </div>
+        <div class="classroom"><h3>学习页面</h3><div class="classroom-grid"><div class="stage" style="background:#1d4ed8"><h4>标准课堂 + 笔记 + 思维导图</h4><p>先学课堂，再看文档笔记和树状思维导图，最后进入随堂测试和编程练习。</p></div><div class="timeline"><div class="event"><i class="dot"></i>课堂视频</div><div class="event"><i class="dot"></i>文档笔记</div><div class="event"><i class="dot"></i>思维导图</div><div class="event"><i class="dot"></i>课堂测试</div></div></div></div>
+        <div class="design-notes"><div class="note"><b>适用场景</b><p>真实学生长期使用。</p></div><div class="note"><b>优势</b><p>清爽、低压力、学习动线自然。</p></div><div class="note"><b>注意</b><p>仍需保留技术审计信息入口。</p></div></div>
+      </main>
+    </div>
+  </section>
+
+  <section id="option-4" class="option game">
+    <div class="option-header">
+      <div class="option-title"><span>Option 04</span><h2>Game-Based Mastery Map</h2></div>
+      <p>游戏化关卡地图风格。重点表达学习路径、今日任务、补救支线和掌握度颜色反馈。</p>
+    </div>
+    <div class="product-shell">
+      <aside class="side">
+        <div class="brand"><div class="brand-mark">GO</div><div><strong>学习闯关岛</strong><small>Mastery Quest</small></div></div>
+        <div class="nav-item"><span class="nav-icon"></span>课程岛屿</div><div class="nav-item"><span class="nav-icon"></span>画像徽章</div><div class="nav-item active"><span class="nav-icon"></span>主线地图</div><div class="nav-item"><span class="nav-icon"></span>知识图谱</div><div class="nav-item"><span class="nav-icon"></span>课堂挑战</div>
+        <div class="side-card"><small>当前章节</small><strong>第 1 章 Python 概述</strong><small>通过后解锁下一章</small><div class="bar"><i></i></div></div>
+      </aside>
+      <main class="main">
+        <div class="top-row"><div class="metric"><small>今日主线</small><strong>1关</strong><span class="status">必须当天完成</span></div><div class="metric"><small>弱项节点</small><strong>红色</strong><span class="status">未达标</span></div><div class="metric"><small>基础掌握</small><strong>橙色</strong><span class="status">仍需补救</span></div><div class="metric"><small>达标</small><strong>浅绿/绿</strong><span class="status">通过</span></div></div>
+        <div class="workspace-grid">
+          <div class="panel"><h3>主线任务地图</h3><div class="path-map" style="height:420px"><div class="path-line" style="height:370px"></div><div class="quest current" style="left:70px;top:28px"><b>1.1.1 Python语言特点</b>课堂评估未达标</div><div class="pin" style="left:282px;top:58px;background:#ef4444">1</div><div class="quest remedial" style="right:64px;top:150px"><b>薄弱点专项</b>C 知识点专项学习</div><div class="pin" style="left:282px;top:178px;background:#f59e0b">2</div><div class="quest" style="left:70px;top:282px"><b>1.1.2 应用领域</b>回到主线</div><div class="pin" style="left:282px;top:310px;background:#94a3b8">3</div></div></div>
+          <div class="panel"><h3>掌握度图谱</h3><div class="graph-area" style="height:420px"><span class="edge" style="left:220px;top:180px;width:190px;transform:rotate(-22deg)"></span><span class="edge" style="left:220px;top:202px;width:190px;transform:rotate(20deg)"></span><span class="edge" style="left:420px;top:150px;width:140px;transform:rotate(8deg)"></span><span class="edge" style="left:430px;top:250px;width:145px;transform:rotate(-10deg)"></span><span class="node root" style="left:200px;top:170px"></span><span class="node weak" style="left:410px;top:132px"></span><span class="node basic" style="left:420px;top:248px"></span><span class="node good" style="left:575px;top:145px"></span><span class="node master" style="left:590px;top:260px"></span></div></div>
+        </div>
+        <div class="classroom"><h3>关卡学习页</h3><div class="classroom-grid"><div class="stage" style="background:#1e1b4b"><h4>课堂挑战</h4><p>完成标准课堂后自动进入课堂测试。未通过时地图立即插入补救关卡，通过后回到主线。</p></div><div class="timeline"><div class="event"><i class="dot"></i>进入课堂</div><div class="event"><i class="dot"></i>完成测试</div><div class="event"><i class="dot"></i>更新图谱颜色</div><div class="event"><i class="dot"></i>重规划路径</div></div></div></div>
+        <div class="design-notes"><div class="note"><b>适用场景</b><p>突出路径规划和动态补救。</p></div><div class="note"><b>优势</b><p>展示效果强，评委一眼看懂闭环。</p></div><div class="note"><b>注意</b><p>知识库页面应保持专业，不要过度游戏化。</p></div></div>
+      </main>
+    </div>
+  </section>
+
+  <section id="option-5" class="option lab">
+    <div class="option-header">
+      <div class="option-title"><span>Option 05</span><h2>Premium Knowledge Lab</h2></div>
+      <p>知识实验室风格。突出本地知识库、图谱、向量检索、MySQL 证据回表和高保真知识溯源。</p>
+    </div>
+    <div class="product-shell">
+      <aside class="side">
+        <div class="brand"><div class="brand-mark">KB</div><div><strong>Knowledge Lab</strong><small>课程知识实验室</small></div></div>
+        <div class="nav-item active"><span class="nav-icon"></span>本地知识库</div><div class="nav-item"><span class="nav-icon"></span>知识图谱</div><div class="nav-item"><span class="nav-icon"></span>证据检索</div><div class="nav-item"><span class="nav-icon"></span>标准课堂</div><div class="nav-item"><span class="nav-icon"></span>评估审计</div>
+        <div class="side-card"><small>Vector Layer</small><strong>Milvus + BGE-M3</strong><small>Final Evidence: MySQL chunks</small><div class="bar"><i></i></div></div>
+      </aside>
+      <main class="main">
+        <div class="top-row"><div class="metric"><small>材料</small><strong>2 PDF</strong><span class="status">MinerU parsed</span></div><div class="metric"><small>Chunks</small><strong>286</strong><span class="status">MySQL durable</span></div><div class="metric"><small>Vectors</small><strong>286</strong><span class="status">Milvus indexed</span></div><div class="metric"><small>Graph</small><strong>完整</strong><span class="status">Neo4j isolated</span></div></div>
+        <div class="workspace-grid">
+          <div class="panel"><h3>证据链路</h3><div class="pipeline"><div class="pipe-step"><b>MinerU</b>结构化解析</div><div class="pipe-step"><b>Chunk</b>章节语义分块</div><div class="pipe-step"><b>BGE-M3</b>本地向量</div><div class="pipe-step"><b>Milvus</b>候选召回</div><div class="pipe-step"><b>MySQL</b>原文证据</div></div><div class="timeline"><div class="event"><i class="dot"></i>chunk#182 page 14: Python语言特点</div><div class="event"><i class="dot"></i>chunk#184 page 15: 语法场景</div><div class="event"><i class="dot"></i>chunk#191 page 18: 常见误区</div><div class="event"><i class="dot"></i>Neo4j: parent / prerequisite / successor</div></div></div>
+          <div class="panel"><h3>知识结构图</h3><div class="graph-area"><span class="edge" style="left:250px;top:130px;width:170px;transform:rotate(-16deg)"></span><span class="edge" style="left:250px;top:146px;width:170px;transform:rotate(16deg)"></span><span class="edge" style="left:430px;top:105px;width:140px;transform:rotate(12deg)"></span><span class="node root" style="left:230px;top:118px"></span><span class="node weak" style="left:420px;top:90px"></span><span class="node basic" style="left:430px;top:168px"></span><span class="node good" style="left:585px;top:126px"></span><span class="node unlearned" style="left:650px;top:190px"></span></div></div>
+        </div>
+        <div class="classroom"><h3>标准课堂与审计面板</h3><div class="classroom-grid"><div class="stage"><h4>知识点学习</h4><p>课堂展示区占据主视觉，右侧保留证据、图谱约束、校验分数、辩论摘要和最终决策。</p></div><div class="timeline"><div class="event"><i class="dot"></i>OpenMAIC classroom ready</div><div class="event"><i class="dot"></i>Evidence coverage 91%</div><div class="event"><i class="dot"></i>Decision accepted</div><div class="event"><i class="dot"></i>Assessment pending</div></div></div></div>
+        <div class="design-notes"><div class="note"><b>适用场景</b><p>知识库、图谱和 RAG 能力展示。</p></div><div class="note"><b>优势</b><p>高保真溯源，专业可信。</p></div><div class="note"><b>注意</b><p>学生端可适当减弱实验室感。</p></div></div>
+      </main>
+    </div>
+  </section>
+</body>
+</html>

@@ -1,0 +1,42 @@
+# Web API
+fastapi>=0.115,<1
+uvicorn[standard]>=0.30,<1
+python-multipart>=0.0.9,<1
+httpx>=0.27,<1
+
+# Data models and validation
+pydantic>=2,<3
+pydantic-settings>=2,<3
+email-validator>=2,<3
+
+# Database and authentication
+sqlalchemy>=2,<3
+pymysql>=1.1,<2
+python-jose[cryptography]>=3.3,<4
+passlib[bcrypt]==1.7.4
+bcrypt>=4.0.1,<5
+
+# Course material parsing
+pypdf>=5,<7
+PyMuPDF>=1.24,<2
+python-pptx>=1,<2
+Pillow>=10,<13
+numpy>=1.26,<3
+paddleocr>=3,<4
+paddlepaddle>=3,<4
+
+# Local knowledge base, embeddings, and graph store
+pymilvus>=2.5,<3
+posthog<6
+sentence-transformers>=3,<6
+transformers>=4.41,<5
+torch>=2.1,<3
+neo4j>=5,<7
+langgraph>=0.2,<1
+
+# Optional local classroom TTS fallback
+# VoxCPM2 is loaded lazily by app/services/voxcpm_tts_service.py when /tts/upload is used.
+# It is intentionally not part of the default install because OpenMAIC uses Aliyun Bailian Qwen TTS by default.
+
+# Tests
+pytest>=8,<10

@@ -1,0 +1,50 @@
+[
+  {
+    "student_id": "student-xm",
+    "major": "计算机科学与技术",
+    "grade": "大二",
+    "learning_goal": "4周内入门机器学习",
+    "knowledge_foundation": "Python基础一般，线性代数薄弱",
+    "learning_style": "偏好图解、动画和代码实操",
+    "cognitive_style": "先直观理解再公式推导",
+    "weak_points": ["梯度下降", "矩阵运算", "模型评估"],
+    "time_preference": "每天晚间45分钟",
+    "resource_preference": ["动画", "代码实操", "短练习"]
+  },
+  {
+    "student_id": "student-practice",
+    "major": "软件工程",
+    "grade": "大三",
+    "learning_goal": "完成一个可展示的机器学习小项目",
+    "knowledge_foundation": "Python熟练，数学基础一般",
+    "learning_style": "偏好项目驱动和代码拆解",
+    "cognitive_style": "先动手再总结理论",
+    "weak_points": ["模型评估", "过拟合"],
+    "time_preference": "周末集中学习",
+    "resource_preference": ["代码实操", "案例分析"]
+  },
+  {
+    "student_id": "student-theory",
+    "major": "人工智能",
+    "grade": "大一",
+    "learning_goal": "夯实机器学习理论基础",
+    "knowledge_foundation": "高等数学较好，编程经验较少",
+    "learning_style": "偏好公式推导和结构化文档",
+    "cognitive_style": "先理论框架再实践验证",
+    "weak_points": ["Python实现", "代码调试"],
+    "time_preference": "每天午后30分钟",
+    "resource_preference": ["讲解文档", "拓展阅读", "短练习"]
+  },
+  {
+    "student_id": "student-sprint",
+    "major": "电子信息工程",
+    "grade": "大四",
+    "learning_goal": "两周内准备机器学习课程答辩",
+    "knowledge_foundation": "了解基本概念但缺少系统路径",
+    "learning_style": "偏好高频考点和快速复盘",
+    "cognitive_style": "从问题反推知识点",
+    "weak_points": ["知识体系", "模型选择"],
+    "time_preference": "每天晚上90分钟",
+    "resource_preference": ["思维导图", "练习题", "总结文档"]
+  }
+]

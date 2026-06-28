@@ -1,0 +1,12 @@
+[
+  { "id": "res-001", "topic": "梯度下降", "type": "document", "difficulty": "基础", "title": "梯度下降直观讲解", "tags": ["图解", "入门"] },
+  { "id": "res-002", "topic": "梯度下降", "type": "mind_map", "difficulty": "基础", "title": "梯度下降知识导图", "tags": ["结构化", "复盘"] },
+  { "id": "res-003", "topic": "梯度下降", "type": "exercise", "difficulty": "基础", "title": "学习率与梯度方向练习", "tags": ["短练习", "错题诊断"] },
+  { "id": "res-004", "topic": "梯度下降", "type": "video", "difficulty": "基础", "title": "损失曲面下降动画脚本", "tags": ["动画", "可视化"] },
+  { "id": "res-005", "topic": "梯度下降", "type": "code_lab", "difficulty": "基础", "title": "Python实现线性回归梯度下降", "tags": ["Python", "实操"] },
+  { "id": "res-006", "topic": "线性回归", "type": "document", "difficulty": "入门", "title": "线性回归从预测问题开始", "tags": ["入门", "案例"] },
+  { "id": "res-007", "topic": "损失函数", "type": "reading", "difficulty": "入门", "title": "均方误差与优化目标", "tags": ["阅读", "公式"] },
+  { "id": "res-008", "topic": "模型评估指标", "type": "exercise", "difficulty": "基础", "title": "准确率、召回率与F1练习", "tags": ["评估", "练习"] },
+  { "id": "res-009", "topic": "过拟合与正则化", "type": "document", "difficulty": "进阶", "title": "从训练误差理解过拟合", "tags": ["进阶", "泛化"] },
+  { "id": "res-010", "topic": "逻辑回归", "type": "code_lab", "difficulty": "进阶", "title": "二分类逻辑回归实操", "tags": ["分类", "Python"] }
+]

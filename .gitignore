@@ -1,0 +1,55 @@
+node_modules/
+dist/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+*.log
+.env
+.playwright-mcp/
+.tmp-chrome-design/
+.venv/
+venv/
+learning_agents.db
+course_resources/
+data/uploads/
+data/chroma/
+data/milvus/
+data/models/
+data/neo4j/
+data/ocr/
+data/tmp/
+OpenMAIC-main/**/.next/
+OpenMAIC-main/**/node_modules/
+OpenMAIC-main/**/dist/
+OpenMAIC-main/**/.env.local
+OpenMAIC-main/**/data/
+apps/api/.pytest_cache/
+apps/api/data/
+apps/web/dist/
+apps/web/node_modules/
+/tmp/
+/browser-current-learning-state.json
+/*.png
+
+# Python虚拟环境
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyd
+.env
+
+# 前端依赖
+node_modules/
+dist/
+.pnpm-store/
+
+# 缓存、数据库、日志
+*.db
+*.sqlite
+logs/
+cache/
+
+# IDE文件
+.idea/
+.vscode/

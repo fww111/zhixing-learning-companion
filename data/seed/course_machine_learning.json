@@ -1,0 +1,13 @@
+{
+  "course": "机器学习基础",
+  "knowledge_points": [
+    { "id": "ml-001", "title": "机器学习任务类型", "difficulty": "入门", "prerequisites": [] },
+    { "id": "ml-002", "title": "线性回归", "difficulty": "入门", "prerequisites": ["ml-001"] },
+    { "id": "ml-003", "title": "损失函数", "difficulty": "入门", "prerequisites": ["ml-002"] },
+    { "id": "ml-004", "title": "梯度下降", "difficulty": "基础", "prerequisites": ["ml-003"] },
+    { "id": "ml-005", "title": "学习率调优", "difficulty": "基础", "prerequisites": ["ml-004"] },
+    { "id": "ml-006", "title": "过拟合与正则化", "difficulty": "进阶", "prerequisites": ["ml-002"] },
+    { "id": "ml-007", "title": "分类与逻辑回归", "difficulty": "进阶", "prerequisites": ["ml-004"] },
+    { "id": "ml-008", "title": "模型评估指标", "difficulty": "基础", "prerequisites": ["ml-001"] }
+  ]
+}

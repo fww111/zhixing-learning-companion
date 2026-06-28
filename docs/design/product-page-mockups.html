@@ -1,0 +1,1435 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>智学引擎产品页面图</title>
+  <style>
+    :root {
+      --bg: #edf2f7;
+      --ink: #101827;
+      --muted: #667085;
+      --line: #d9e2ec;
+      --panel: #ffffff;
+      --panel-soft: #f7fafc;
+      --primary: #172033;
+      --accent: #047a78;
+      --accent-soft: #e7f7f4;
+      --blue: #2563eb;
+      --amber: #f59e0b;
+      --red: #dc2626;
+      --green: #16a34a;
+      --soft-green: #86efac;
+      --shadow: 0 18px 50px rgba(16, 24, 39, 0.12);
+      --radius: 10px;
+      font-family: Inter, "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; background: linear-gradient(180deg, #eef4f8 0%, #e8eef5 100%); }
+    .board {
+      display: grid;
+      gap: 34px;
+      margin: 0 auto;
+      padding: 34px;
+      width: 1508px;
+    }
+
+    .cover {
+      align-items: center;
+      background:
+        radial-gradient(circle at 78% 18%, rgba(4, 122, 120, 0.16), transparent 30%),
+        radial-gradient(circle at 14% 92%, rgba(245, 158, 11, 0.16), transparent 26%),
+        #ffffff;
+      border: 1px solid #dbe4ee;
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      min-height: 220px;
+      padding: 36px;
+    }
+
+    .cover h1 {
+      font-size: 36px;
+      letter-spacing: 0;
+      line-height: 1.18;
+      margin: 8px 0 12px;
+    }
+
+    .cover p {
+      color: #445266;
+      font-size: 16px;
+      line-height: 1.7;
+      margin: 0;
+      max-width: 760px;
+    }
+
+    .badge-row, .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .badge, .tag, .status {
+      align-items: center;
+      border-radius: 999px;
+      display: inline-flex;
+      font-size: 12px;
+      font-weight: 800;
+      gap: 6px;
+      min-height: 28px;
+      padding: 5px 10px;
+      white-space: nowrap;
+    }
+
+    .badge { background: #ecfdf5; border: 1px solid #bbf7d0; color: #166534; }
+    .tag { background: #f1f5f9; border: 1px solid #dbe3ee; color: #415065; }
+    .status { background: var(--accent-soft); border: 1px solid #9edbd3; color: #08635f; }
+    .status.warn { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
+    .status.blue { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+    .status.red { background: #fff1f2; border-color: #fecdd3; color: #b91c1c; }
+    .status.gray { background: #f1f5f9; border-color: #dbe3ee; color: #475569; }
+
+    .reference-box {
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid #dbe4ee;
+      border-radius: 14px;
+      display: grid;
+      gap: 12px;
+      padding: 18px;
+      width: 410px;
+    }
+
+    .reference-box strong { font-size: 15px; }
+    .reference-box span { color: var(--muted); font-size: 13px; line-height: 1.55; }
+
+    .mock-frame {
+      background: #f8fafc;
+      border: 1px solid #dbe4ee;
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      width: 1440px;
+    }
+
+    .frame-caption {
+      align-items: center;
+      background: #ffffff;
+      border-bottom: 1px solid #dbe4ee;
+      display: flex;
+      justify-content: space-between;
+      padding: 16px 20px;
+    }
+
+    .frame-caption h2 {
+      font-size: 18px;
+      margin: 0;
+    }
+
+    .frame-caption p {
+      color: var(--muted);
+      font-size: 13px;
+      margin: 4px 0 0;
+    }
+
+    .screen {
+      display: grid;
+      min-height: 860px;
+    }
+
+    .app {
+      background: linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%);
+      display: grid;
+      grid-template-columns: 252px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      background: #0f172a;
+      color: #dbeafe;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      padding: 24px 18px;
+    }
+
+    .brand {
+      align-items: center;
+      display: flex;
+      gap: 12px;
+    }
+
+    .brand-mark {
+      align-items: center;
+      background: linear-gradient(135deg, #047a78, #60a5fa);
+      border-radius: 10px;
+      color: #ffffff;
+      display: inline-flex;
+      font-size: 15px;
+      font-weight: 900;
+      height: 42px;
+      justify-content: center;
+      width: 42px;
+    }
+
+    .brand h3 { color: #ffffff; font-size: 16px; margin: 0; }
+    .brand small { color: #93a4b7; display: block; margin-top: 2px; }
+
+    .nav {
+      display: grid;
+      gap: 6px;
+    }
+
+    .nav a {
+      align-items: center;
+      border-radius: 9px;
+      color: #cbd5e1;
+      display: flex;
+      font-size: 14px;
+      font-weight: 750;
+      gap: 10px;
+      min-height: 44px;
+      padding: 10px 12px;
+      text-decoration: none;
+    }
+
+    .nav a.active {
+      background: #ffffff;
+      color: #0f172a;
+    }
+
+    .nav-icon {
+      align-items: center;
+      border: 1px solid currentColor;
+      border-radius: 6px;
+      display: inline-flex;
+      font-size: 10px;
+      height: 22px;
+      justify-content: center;
+      width: 22px;
+    }
+
+    .side-card {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      display: grid;
+      gap: 10px;
+      margin-top: auto;
+      padding: 14px;
+    }
+
+    .side-card strong { color: #ffffff; font-size: 20px; }
+    .side-card span { color: #b8c4d1; font-size: 12px; }
+
+    .main {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      min-width: 0;
+    }
+
+    .topbar {
+      align-items: center;
+      background: rgba(255, 255, 255, 0.92);
+      border-bottom: 1px solid #dbe4ee;
+      display: flex;
+      justify-content: space-between;
+      min-height: 72px;
+      padding: 14px 24px;
+    }
+
+    .topbar h2 { font-size: 20px; margin: 0; }
+    .topbar p { color: var(--muted); font-size: 13px; margin: 3px 0 0; }
+
+    .user {
+      align-items: center;
+      display: flex;
+      gap: 10px;
+    }
+
+    .avatar {
+      align-items: center;
+      background: #172033;
+      border-radius: 999px;
+      color: #ffffff;
+      display: inline-flex;
+      font-weight: 900;
+      height: 38px;
+      justify-content: center;
+      width: 38px;
+    }
+
+    .content {
+      display: grid;
+      gap: 16px;
+      padding: 20px 24px 24px;
+    }
+
+    .panel {
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 1px 2px rgba(16, 24, 39, 0.04);
+      padding: 16px;
+    }
+
+    .panel-title {
+      align-items: center;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .panel-title h3 { font-size: 16px; margin: 0; }
+    .panel-title span { color: var(--muted); font-size: 12px; }
+
+    .grid-2 { display: grid; gap: 16px; grid-template-columns: 1.15fr 0.85fr; }
+    .grid-3 { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-4 { display: grid; gap: 12px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .grid-5 { display: grid; gap: 12px; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+    .metric {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 9px;
+      display: grid;
+      gap: 6px;
+      min-height: 92px;
+      padding: 12px;
+    }
+
+    .metric span { color: var(--muted); font-size: 12px; }
+    .metric strong { color: var(--primary); font-size: 24px; }
+    .metric small { color: #047a78; font-weight: 800; }
+
+    .button {
+      align-items: center;
+      background: var(--primary);
+      border: 0;
+      border-radius: 8px;
+      color: #ffffff;
+      display: inline-flex;
+      font-weight: 850;
+      gap: 8px;
+      justify-content: center;
+      min-height: 42px;
+      padding: 10px 14px;
+    }
+
+    .button.secondary {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #344054;
+    }
+
+    .auth-screen {
+      background:
+        radial-gradient(circle at 82% 18%, rgba(4, 122, 120, 0.18), transparent 30%),
+        radial-gradient(circle at 16% 78%, rgba(245, 158, 11, 0.14), transparent 25%),
+        #f8fafc;
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      min-height: 860px;
+      padding: 42px;
+    }
+
+    .auth-left {
+      align-content: center;
+      display: grid;
+      gap: 22px;
+      padding: 30px;
+    }
+
+    .auth-left h1 {
+      font-size: 42px;
+      letter-spacing: 0;
+      line-height: 1.13;
+      margin: 0;
+      max-width: 560px;
+    }
+
+    .auth-left p {
+      color: #475467;
+      font-size: 17px;
+      line-height: 1.8;
+      margin: 0;
+      max-width: 620px;
+    }
+
+    .auth-card {
+      align-self: center;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid #dbe4ee;
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 16px;
+      justify-self: center;
+      padding: 30px;
+      width: 430px;
+    }
+
+    .auth-card h2 { font-size: 24px; margin: 0; }
+    .auth-card p { color: var(--muted); margin: 0; }
+    .tabs {
+      background: #f1f5f9;
+      border-radius: 999px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      padding: 4px;
+    }
+    .tabs span {
+      border-radius: 999px;
+      color: #667085;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 9px;
+      text-align: center;
+    }
+    .tabs span.active { background: #ffffff; color: #172033; box-shadow: 0 1px 2px rgba(16, 24, 39, 0.08); }
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+    .field label { color: #344054; font-size: 13px; font-weight: 800; }
+    .input {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      min-height: 44px;
+      padding: 11px 12px;
+      color: #667085;
+    }
+
+    .process-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+      max-width: 640px;
+    }
+    .process-item {
+      align-items: center;
+      background: rgba(255,255,255,0.74);
+      border: 1px solid #dbe4ee;
+      border-radius: 12px;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: 34px 1fr auto;
+      padding: 12px;
+    }
+    .process-index {
+      align-items: center;
+      background: #172033;
+      border-radius: 999px;
+      color: #ffffff;
+      display: inline-flex;
+      font-size: 13px;
+      font-weight: 900;
+      height: 34px;
+      justify-content: center;
+      width: 34px;
+    }
+    .process-item strong { display: block; font-size: 14px; }
+    .process-item small { color: var(--muted); }
+
+    .chat-layout {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 1.15fr 0.85fr;
+    }
+    .chat-box {
+      display: grid;
+      gap: 12px;
+    }
+    .message {
+      border-radius: 13px;
+      display: grid;
+      gap: 8px;
+      padding: 14px;
+      max-width: 82%;
+    }
+    .message.ai { background: #eef6ff; border: 1px solid #bfdbfe; }
+    .message.user { background: #f8fafc; border: 1px solid #dbe4ee; justify-self: end; }
+    .message span { color: var(--muted); font-size: 12px; font-weight: 800; }
+    .message p { line-height: 1.65; margin: 0; }
+    .answer-box {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      color: #667085;
+      min-height: 116px;
+      padding: 12px;
+    }
+    .profile-dims {
+      display: grid;
+      gap: 9px;
+    }
+    .dim {
+      align-items: center;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      min-height: 54px;
+      padding: 10px;
+    }
+    .dim strong { font-size: 13px; }
+    .dim small { color: var(--muted); display: block; margin-top: 3px; }
+    .bar {
+      background: #e2e8f0;
+      border-radius: 999px;
+      height: 7px;
+      overflow: hidden;
+      width: 84px;
+    }
+    .bar i { background: var(--accent); display: block; height: 100%; }
+
+    .course-row {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: 0.72fr 1.28fr;
+    }
+    .course-list {
+      display: grid;
+      gap: 10px;
+    }
+    .course-card {
+      background: #ffffff;
+      border: 1px solid #dbe4ee;
+      border-radius: 10px;
+      display: grid;
+      gap: 9px;
+      padding: 14px;
+    }
+    .course-card.active { border-color: #8fd1ca; box-shadow: 0 10px 26px rgba(4,122,120,0.1); }
+    .course-card strong { font-size: 15px; }
+    .course-card p { color: var(--muted); font-size: 13px; line-height: 1.55; margin: 0; }
+    .upload-zone {
+      align-items: center;
+      background: #f8fafc;
+      border: 1px dashed #94a3b8;
+      border-radius: 12px;
+      display: grid;
+      gap: 8px;
+      justify-items: center;
+      min-height: 150px;
+      padding: 18px;
+      text-align: center;
+    }
+    .pipeline {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(5, 1fr);
+    }
+    .pipe-step {
+      background: #f8fafc;
+      border: 1px solid #dbe4ee;
+      border-radius: 9px;
+      display: grid;
+      gap: 6px;
+      min-height: 86px;
+      padding: 11px;
+    }
+    .pipe-step strong { font-size: 13px; }
+    .pipe-step small { color: var(--muted); line-height: 1.45; }
+    .chunk-list {
+      display: grid;
+      gap: 9px;
+      max-height: 340px;
+      overflow: hidden;
+    }
+    .chunk {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      display: grid;
+      gap: 5px;
+      padding: 10px;
+    }
+    .chunk strong { font-size: 13px; }
+    .chunk p { color: var(--muted); font-size: 12px; line-height: 1.5; margin: 0; }
+
+    .graph-layout {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 1fr 360px;
+    }
+    .graph-canvas {
+      background:
+        radial-gradient(circle at 55% 50%, rgba(4, 122, 120, 0.13), transparent 30%),
+        linear-gradient(180deg, #f8fbff, #f7fafc);
+      border: 1px solid #dbe4ee;
+      border-radius: 12px;
+      height: 556px;
+      overflow: hidden;
+      position: relative;
+    }
+    .node {
+      align-items: center;
+      border: 4px solid #ffffff;
+      border-radius: 999px;
+      box-shadow: 0 12px 24px rgba(16, 24, 39, 0.16);
+      color: #ffffff;
+      display: flex;
+      font-size: 12px;
+      font-weight: 900;
+      height: 74px;
+      justify-content: center;
+      line-height: 1.25;
+      padding: 8px;
+      position: absolute;
+      text-align: center;
+      width: 74px;
+      z-index: 2;
+    }
+    .node.large { height: 96px; width: 96px; }
+    .n-gray { background: #94a3b8; }
+    .n-red { background: #dc2626; }
+    .n-amber { background: #f59e0b; }
+    .n-soft { background: #86efac; color: #14532d; }
+    .n-green { background: #16a34a; }
+    .edge {
+      background: #9aa8b8;
+      height: 2px;
+      left: 0;
+      position: absolute;
+      top: 0;
+      transform-origin: left center;
+      z-index: 1;
+    }
+    .edge.blue { background: #7da1cf; }
+    .edge.green { background: #55b99c; }
+    .graph-detail {
+      display: grid;
+      gap: 12px;
+    }
+    .detail-block {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 9px;
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+    }
+    .detail-block strong { font-size: 13px; }
+    .detail-block p { color: var(--muted); font-size: 13px; line-height: 1.55; margin: 0; }
+
+    .path-layout {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 1fr 360px;
+    }
+    .quest-map {
+      background: #ffffff;
+      border: 1px solid #dbe4ee;
+      border-radius: 12px;
+      min-height: 590px;
+      overflow: hidden;
+      padding: 20px;
+      position: relative;
+    }
+    .road {
+      background: repeating-linear-gradient(180deg, rgba(15,23,42,.17) 0 18px, transparent 18px 31px);
+      border-radius: 999px;
+      bottom: 42px;
+      left: 50%;
+      position: absolute;
+      top: 42px;
+      transform: translateX(-50%);
+      width: 6px;
+    }
+    .quest {
+      align-items: center;
+      display: grid;
+      gap: 14px;
+      grid-template-columns: 1fr 70px 1fr;
+      min-height: 132px;
+      position: relative;
+      z-index: 2;
+    }
+    .quest-card {
+      background: #ffffff;
+      border: 1px solid #dbe4ee;
+      border-radius: 10px;
+      box-shadow: 0 12px 28px rgba(16,24,39,0.07);
+      display: grid;
+      gap: 8px;
+      max-width: 360px;
+      padding: 13px;
+    }
+    .quest:nth-child(odd) .quest-card { grid-column: 1; justify-self: end; }
+    .quest:nth-child(even) .quest-card { grid-column: 3; justify-self: start; }
+    .quest-dot {
+      align-items: center;
+      background: #94a3b8;
+      border: 4px solid #ffffff;
+      border-radius: 999px;
+      box-shadow: 0 14px 28px rgba(16,24,39,0.2);
+      color: #ffffff;
+      display: flex;
+      font-weight: 900;
+      grid-column: 2;
+      height: 68px;
+      justify-content: center;
+      width: 68px;
+    }
+    .quest-dot.current { background: #047a78; outline: 5px solid rgba(4,122,120,0.18); }
+    .quest-card strong { font-size: 14px; }
+    .quest-card p { color: var(--muted); font-size: 12px; line-height: 1.5; margin: 0; }
+    .chapter-list {
+      display: grid;
+      gap: 8px;
+      max-height: 360px;
+      overflow: hidden;
+    }
+    .chapter {
+      align-items: center;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      min-height: 50px;
+      padding: 10px;
+    }
+    .chapter.active {
+      background: #eefdfb;
+      border-color: #9edbd3;
+      color: #08635f;
+    }
+    .chapter strong { font-size: 13px; }
+    .chapter small { color: var(--muted); }
+
+    .resource-layout {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 1fr 350px;
+    }
+    .study-layout {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 280px minmax(0, 1fr) 340px;
+    }
+    .resource-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .resource-card {
+      background: #ffffff;
+      border: 1px solid #dbe4ee;
+      border-radius: 10px;
+      display: grid;
+      gap: 10px;
+      min-height: 184px;
+      padding: 14px;
+    }
+    .resource-head {
+      align-items: center;
+      display: flex;
+      gap: 10px;
+    }
+    .res-icon {
+      align-items: center;
+      background: #eef6ff;
+      border-radius: 8px;
+      color: #1d4ed8;
+      display: inline-flex;
+      font-size: 11px;
+      font-weight: 900;
+      height: 34px;
+      justify-content: center;
+      width: 34px;
+    }
+    .resource-card p { color: var(--muted); font-size: 13px; line-height: 1.55; margin: 0; }
+    .agent-stack {
+      display: grid;
+      gap: 10px;
+    }
+    .agent {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 9px;
+      display: grid;
+      gap: 6px;
+      padding: 11px;
+    }
+    .agent strong { font-size: 13px; }
+    .agent small { color: var(--muted); line-height: 1.45; }
+
+    .lesson-outline {
+      display: grid;
+      gap: 8px;
+    }
+    .outline-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      display: grid;
+      gap: 4px;
+      padding: 10px;
+    }
+    .outline-item.active {
+      background: #eefdfb;
+      border-color: #9edbd3;
+      color: #08635f;
+    }
+    .outline-item strong { font-size: 13px; }
+    .outline-item small { color: var(--muted); line-height: 1.45; }
+    .lesson-reader {
+      display: grid;
+      gap: 14px;
+    }
+    .reader-block {
+      background: #ffffff;
+      border: 1px solid #dbe4ee;
+      border-radius: 10px;
+      display: grid;
+      gap: 10px;
+      padding: 15px;
+    }
+    .reader-block h3 { font-size: 18px; margin: 0; }
+    .reader-block p { color: #475467; font-size: 14px; line-height: 1.72; margin: 0; }
+    .code-block {
+      background: #111827;
+      border-radius: 9px;
+      color: #d1fae5;
+      font-family: Consolas, "Cascadia Code", monospace;
+      font-size: 12px;
+      line-height: 1.65;
+      padding: 14px;
+      white-space: pre-wrap;
+    }
+    .mindmap-lite {
+      background: #f8fafc;
+      border: 1px solid #dbe4ee;
+      border-radius: 10px;
+      display: grid;
+      gap: 10px;
+      grid-template-columns: 1fr 1fr;
+      padding: 12px;
+    }
+    .mind-node {
+      background: #ffffff;
+      border: 1px solid #dbe4ee;
+      border-radius: 999px;
+      color: #344054;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 8px 10px;
+      text-align: center;
+    }
+    .assessment-layout {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: minmax(0, 1fr) 360px;
+    }
+    .question-list {
+      display: grid;
+      gap: 12px;
+    }
+    .question-card {
+      background: #ffffff;
+      border: 1px solid #dbe4ee;
+      border-radius: 10px;
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+    }
+    .question-card strong { font-size: 14px; }
+    .choice-grid {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .choice {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      color: #475467;
+      font-size: 13px;
+      padding: 10px;
+    }
+    .choice.selected {
+      background: #eefdfb;
+      border-color: #9edbd3;
+      color: #08635f;
+      font-weight: 800;
+    }
+    .branch-panel {
+      border: 1px solid #dbe4ee;
+      border-radius: 10px;
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+    }
+    .branch-panel.pass {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+    }
+    .branch-panel.fail {
+      background: #fff1f2;
+      border-color: #fecdd3;
+    }
+    .branch-panel strong { font-size: 15px; }
+    .branch-panel p { color: #475467; font-size: 13px; line-height: 1.58; margin: 0; }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .legend span {
+      align-items: center;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 999px;
+      color: #475569;
+      display: inline-flex;
+      font-size: 12px;
+      font-weight: 800;
+      gap: 6px;
+      padding: 5px 9px;
+    }
+    .dot {
+      border-radius: 999px;
+      display: inline-block;
+      height: 9px;
+      width: 9px;
+    }
+
+    .sources {
+      background: #ffffff;
+      border: 1px solid #dbe4ee;
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      color: #475467;
+      display: grid;
+      gap: 10px;
+      padding: 24px;
+    }
+    .sources h2 { color: var(--ink); font-size: 18px; margin: 0; }
+    .sources ul { margin: 0; padding-left: 20px; }
+    .sources li { line-height: 1.65; }
+  </style>
+</head>
+<body>
+  <main class="board">
+    <section class="cover">
+      <div>
+        <div class="badge-row">
+          <span class="badge">AI Native Education</span>
+          <span class="tag">多智能体协同</span>
+          <span class="tag">学习画像</span>
+          <span class="tag">知识图谱</span>
+          <span class="tag">动态路径</span>
+        </div>
+        <h1>智学引擎：个性化学习资源生成与多智能体学习平台页面图</h1>
+        <p>面向高等教育课程学习，把“画像构建、课程知识库、知识图谱、路径规划、资源生成、学习评估”组织成一个成熟的工作台式产品流程。视觉参考成熟在线学习产品的任务进度、掌握度反馈和路径地图，但保持高校 AI 应用的专业密度。</p>
+      </div>
+      <div class="reference-box">
+        <strong>成熟产品参考抽象</strong>
+        <span>Coursera：课程卡片、技能收益、进度摘要</span>
+        <span>Khan Academy：掌握度目标、任务仪表、进度可解释</span>
+        <span>Duolingo：关卡路径、今日任务、连续学习动机</span>
+        <span>Notion/Linear：清爽工作台、左侧导航、密集但可扫读的信息布局</span>
+      </div>
+    </section>
+
+    <section class="mock-frame">
+      <div class="frame-caption">
+        <div>
+          <h2>01 登录 / 注册入口</h2>
+          <p>不是营销页，直接进入学生学习系统；右侧体现产品闭环和可信状态。</p>
+        </div>
+        <span class="status blue">第一步：身份认证</span>
+      </div>
+      <div class="screen auth-screen">
+        <div class="auth-left">
+          <div class="brand">
+            <span class="brand-mark">AI</span>
+            <div>
+              <h3 style="color:#172033">智学引擎</h3>
+              <small>Personalized Learning Agents</small>
+            </div>
+          </div>
+          <h1>把课程资料转成可学习、可评估、可动态调整的个人学习系统</h1>
+          <p>登录后系统会先判断是否已有学生画像；没有画像时进入对话式画像构建，已有画像则进入课程知识库与学习路径工作台。</p>
+          <div class="process-list">
+            <div class="process-item">
+              <span class="process-index">1</span>
+              <div><strong>对话构建画像</strong><small>目标、基础、弱项、时间、资源偏好</small></div>
+              <span class="status">DeepSeek V4 Pro</span>
+            </div>
+            <div class="process-item">
+              <span class="process-index">2</span>
+              <div><strong>课程材料知识库</strong><small>PDF/PPT 解析、分块、BGE-M3 向量、Milvus</small></div>
+              <span class="status warn">MinerU</span>
+            </div>
+            <div class="process-item">
+              <span class="process-index">3</span>
+              <div><strong>知识图谱与路径规划</strong><small>Neo4j 图谱、掌握度颜色、今日任务</small></div>
+              <span class="status blue">Neo4j</span>
+            </div>
+          </div>
+        </div>
+        <div class="auth-card">
+          <div>
+            <h2>进入学习空间</h2>
+            <p>使用账号保存画像、课程知识库和学习记录。</p>
+          </div>
+          <div class="tabs"><span class="active">登录</span><span>注册</span></div>
+          <div class="field"><label>邮箱 / 用户名</label><div class="input">xiaoming@example.com</div></div>
+          <div class="field"><label>密码</label><div class="input">••••••••••</div></div>
+          <button class="button">登录并继续</button>
+          <button class="button secondary">创建新学生账号</button>
+          <div class="tag-row">
+            <span class="tag">JWT 安全会话</span>
+            <span class="tag">MySQL 持久画像</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mock-frame">
+      <div class="frame-caption">
+        <div>
+          <h2>02 对话式学生画像构建</h2>
+          <p>第一个问题固定，后续由大模型围绕画像维度追问；右侧实时补全画像证据。</p>
+        </div>
+        <span class="status">画像完整度 86%</span>
+      </div>
+      <div class="screen app">
+        <aside class="sidebar">
+          <div class="brand"><span class="brand-mark">AI</span><div><h3>智学引擎</h3><small>学生端</small></div></div>
+          <nav class="nav">
+            <a class="active"><span class="nav-icon">P</span>学生画像</a>
+            <a><span class="nav-icon">K</span>课程知识库</a>
+            <a><span class="nav-icon">G</span>知识图谱</a>
+            <a><span class="nav-icon">R</span>学习路径</a>
+            <a><span class="nav-icon">A</span>学习评估</a>
+          </nav>
+          <div class="side-card"><span>当前流程</span><strong>2 / 5</strong><span>画像确认后进入课程知识库</span></div>
+        </aside>
+        <section class="main">
+          <header class="topbar">
+            <div><h2>对话式学习画像</h2><p>通过 10 轮以内的深度追问构建多维画像</p></div>
+            <div class="user"><span class="status blue">问题 7 / 10</span><span class="avatar">明</span></div>
+          </header>
+          <div class="content chat-layout">
+            <section class="panel chat-box">
+              <div class="panel-title"><h3>学习需求访谈</h3><span>DeepSeek V4 Pro 动态追问</span></div>
+              <div class="message ai">
+                <span>画像 Agent</span>
+                <p>你希望通过这门 Python 程序设计课程达成什么目标？请结合考试、项目、实习或竞赛说一说。</p>
+              </div>
+              <div class="message user">
+                <span>小明</span>
+                <p>我想补齐 Python 基础，能完成课程项目。平时只有周末 1 小时，列表、函数和异常处理比较薄弱。</p>
+              </div>
+              <div class="message ai">
+                <span>画像 Agent</span>
+                <p>你提到列表、函数和异常处理薄弱。遇到编程题时，你更常卡在概念理解、代码实现、调试报错，还是题意拆解？</p>
+              </div>
+              <div class="answer-box">我通常能看懂题目，但写代码时容易忘记语法和边界情况，希望多一些代码实操和短练习。</div>
+              <div class="tag-row">
+                <span class="status">自动更新画像证据</span>
+                <span class="tag">弱项：函数 / 异常</span>
+                <span class="tag">资源偏好：代码实操</span>
+                <span class="tag">时间：周末 60 分钟</span>
+              </div>
+            </section>
+            <aside class="panel">
+              <div class="panel-title"><h3>多维学生画像</h3><span>自动补全</span></div>
+              <div class="profile-dims">
+                <div class="dim"><div><strong>专业与年级</strong><small>计算机科学 · 大二</small></div><div class="bar"><i style="width:100%"></i></div></div>
+                <div class="dim"><div><strong>学习目标</strong><small>课程项目 + 期末考试</small></div><div class="bar"><i style="width:96%"></i></div></div>
+                <div class="dim"><div><strong>知识基础</strong><small>基础一般，语法记忆不稳</small></div><div class="bar"><i style="width:84%"></i></div></div>
+                <div class="dim"><div><strong>薄弱知识点</strong><small>列表、函数、异常处理</small></div><div class="bar"><i style="width:91%"></i></div></div>
+                <div class="dim"><div><strong>学习时间</strong><small>周末共 1 小时</small></div><div class="bar"><i style="width:100%"></i></div></div>
+                <div class="dim"><div><strong>资源偏好</strong><small>图解 + 代码实操 + 短练习</small></div><div class="bar"><i style="width:88%"></i></div></div>
+                <div class="dim"><div><strong>评估偏好</strong><small>小测 + 代码任务</small></div><div class="bar"><i style="width:75%"></i></div></div>
+              </div>
+            </aside>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="mock-frame">
+      <div class="frame-caption">
+        <div>
+          <h2>03 课程知识库中心</h2>
+          <p>支持内置 Python 示例知识库，也支持上传 PDF/PPT 后走 MinerU 解析、分块、向量化、图谱生成。</p>
+        </div>
+        <span class="status warn">异步解析任务队列</span>
+      </div>
+      <div class="screen app">
+        <aside class="sidebar">
+          <div class="brand"><span class="brand-mark">AI</span><div><h3>智学引擎</h3><small>课程工作台</small></div></div>
+          <nav class="nav">
+            <a><span class="nav-icon">P</span>学生画像</a>
+            <a class="active"><span class="nav-icon">K</span>课程知识库</a>
+            <a><span class="nav-icon">G</span>知识图谱</a>
+            <a><span class="nav-icon">R</span>学习路径</a>
+            <a><span class="nav-icon">A</span>学习评估</a>
+          </nav>
+          <div class="side-card"><span>图谱完整度</span><strong>100%</strong><span>Python 程序设计</span></div>
+        </aside>
+        <section class="main">
+          <header class="topbar">
+            <div><h2>课程知识库</h2><p>从课程材料构建本地知识库，再生成可学习知识图谱</p></div>
+            <div class="user"><button class="button secondary">新建课程</button><button class="button">使用内置 Python</button></div>
+          </header>
+          <div class="content">
+            <section class="course-row">
+              <div class="panel">
+                <div class="panel-title"><h3>我的课程</h3><span>2 门</span></div>
+                <div class="course-list">
+                  <div class="course-card active"><strong>Python 程序设计</strong><p>内置示例知识库 · 10 章 · 113 个知识点</p><div class="tag-row"><span class="status">ready</span><span class="tag">Neo4j 已同步</span></div></div>
+                  <div class="course-card"><strong>Python程序设计.pdf</strong><p>自定义上传材料 · MinerU 精准解析 · BGE-M3 向量化</p><div class="tag-row"><span class="status blue">parsed</span><span class="tag">428 chunks</span></div></div>
+                  <div class="upload-zone"><strong>上传 PDF / PPT / PPTX</strong><span style="color:#667085">拖入课程资料或选择文件，上传后后台解析</span><button class="button secondary">选择文件</button></div>
+                </div>
+              </div>
+              <div class="panel">
+                <div class="panel-title"><h3>知识库构建流水线</h3><span>可追踪状态</span></div>
+                <div class="pipeline">
+                  <div class="pipe-step"><span class="status">1 上传</span><strong>材料入库</strong><small>保存文件与材料记录</small></div>
+                  <div class="pipe-step"><span class="status warn">2 解析</span><strong>MinerU</strong><small>结构化抽取 PDF/PPT 内容</small></div>
+                  <div class="pipe-step"><span class="status blue">3 分块</span><strong>MySQL chunks</strong><small>按标题、页码和语义切片</small></div>
+                  <div class="pipe-step"><span class="status">4 向量</span><strong>BGE-M3</strong><small>本地 embedding + Milvus</small></div>
+                  <div class="pipe-step"><span class="status">5 图谱</span><strong>Neo4j</strong><small>大模型抽取知识结构</small></div>
+                </div>
+                <div style="height:14px"></div>
+                <div class="grid-3">
+                  <div class="metric"><span>课程材料</span><strong>1</strong><small>Python 程序设计</small></div>
+                  <div class="metric"><span>文本切片</span><strong>428</strong><small>已写入 MySQL</small></div>
+                  <div class="metric"><span>向量索引</span><strong>428</strong><small>Milvus course scoped</small></div>
+                </div>
+                <div style="height:14px"></div>
+                <div class="chunk-list">
+                  <div class="chunk"><strong>第 8 章 文件操作 / 8.1 显示和输入数据</strong><p>掌握输入输出数据的核心概念、适用场景和常见误区。</p></div>
+                  <div class="chunk"><strong>第 9 章 异常处理 / 9.1 异常概述</strong><p>理解异常类型、捕获策略和带异常处理的文件读写实践。</p></div>
+                  <div class="chunk"><strong>第 10 章 面向对象程序设计</strong><p>掌握类、对象、继承和封装的课程知识结构。</p></div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="mock-frame">
+      <div class="frame-caption">
+        <div>
+          <h2>04 课程知识图谱</h2>
+          <p>颜色只表示掌握情况；图下/侧展示文字说明、依赖关系、资源入口。</p>
+        </div>
+        <div class="legend">
+          <span><i class="dot" style="background:#94a3b8"></i>未学习</span>
+          <span><i class="dot" style="background:#dc2626"></i>严重弱项</span>
+          <span><i class="dot" style="background:#f59e0b"></i>掌握基础</span>
+          <span><i class="dot" style="background:#86efac"></i>达标良好</span>
+          <span><i class="dot" style="background:#16a34a"></i>精通</span>
+        </div>
+      </div>
+      <div class="screen app">
+        <aside class="sidebar">
+          <div class="brand"><span class="brand-mark">AI</span><div><h3>智学引擎</h3><small>图谱空间</small></div></div>
+          <nav class="nav">
+            <a><span class="nav-icon">P</span>学生画像</a>
+            <a><span class="nav-icon">K</span>课程知识库</a>
+            <a class="active"><span class="nav-icon">G</span>知识图谱</a>
+            <a><span class="nav-icon">R</span>学习路径</a>
+            <a><span class="nav-icon">A</span>学习评估</a>
+          </nav>
+          <div class="side-card"><span>当前课程</span><strong>Python</strong><span>113 个节点 · 142 条关系</span></div>
+        </aside>
+        <section class="main">
+          <header class="topbar">
+            <div><h2>Python 程序设计 · 知识图谱</h2><p>根据本地课程知识库和大模型抽取结果展示课程全部知识结构</p></div>
+            <div class="user"><button class="button secondary">重新生成</button><button class="button">规划学习路径</button></div>
+          </header>
+          <div class="content graph-layout">
+            <section class="panel">
+              <div class="panel-title"><h3>图谱视图</h3><span>点击节点进入知识点学习</span></div>
+              <div class="graph-canvas">
+                <div class="edge blue" style="left:250px;top:270px;width:210px;transform:rotate(-18deg)"></div>
+                <div class="edge" style="left:410px;top:215px;width:190px;transform:rotate(22deg)"></div>
+                <div class="edge green" style="left:510px;top:338px;width:220px;transform:rotate(-8deg)"></div>
+                <div class="edge" style="left:620px;top:170px;width:210px;transform:rotate(34deg)"></div>
+                <div class="edge blue" style="left:690px;top:390px;width:190px;transform:rotate(-28deg)"></div>
+                <div class="node large n-green" style="left:360px;top:236px">Python<br>课程结构</div>
+                <div class="node n-gray" style="left:170px;top:162px">基础语法</div>
+                <div class="node n-amber" style="left:580px;top:118px">函数</div>
+                <div class="node n-red" style="left:742px;top:248px">异常处理</div>
+                <div class="node n-soft" style="left:548px;top:392px">文件操作</div>
+                <div class="node n-gray" style="left:838px;top:418px">面向对象</div>
+                <div class="node n-green" style="left:208px;top:380px">列表元组</div>
+              </div>
+            </section>
+            <aside class="panel graph-detail">
+              <div class="panel-title"><h3>节点说明</h3><span class="status red">严重弱项</span></div>
+              <div>
+                <h2 style="margin:0 0 8px;font-size:24px">第 9 章 异常处理</h2>
+                <p style="color:#667085;line-height:1.7;margin:0">本章要求理解异常类型、try/except/finally 捕获策略，以及带异常处理的文件读写实践。系统判定该节点为严重弱项，学习后需通过代码任务评估。</p>
+              </div>
+              <div class="detail-block"><strong>前置依赖</strong><p>文件操作、函数调用、输入输出数据。</p></div>
+              <div class="detail-block"><strong>后续影响</strong><p>影响文件读写、项目异常处理和综合实训任务。</p></div>
+              <div class="detail-block"><strong>推荐资源</strong><p>讲解文档、思维导图、分层练习、代码实操案例。</p></div>
+              <button class="button">进入该知识点学习</button>
+            </aside>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="mock-frame">
+      <div class="frame-caption">
+        <div>
+          <h2>05 游戏地图式学习路径</h2>
+          <p>主线按当前章节推进；今日任务必须当天完成，额外时间可继续学习后续关卡。</p>
+        </div>
+        <span class="status blue">今日任务 · 周六 30 分钟</span>
+      </div>
+      <div class="screen app">
+        <aside class="sidebar">
+          <div class="brand"><span class="brand-mark">AI</span><div><h3>智学引擎</h3><small>路径规划</small></div></div>
+          <nav class="nav">
+            <a><span class="nav-icon">P</span>学生画像</a>
+            <a><span class="nav-icon">K</span>课程知识库</a>
+            <a><span class="nav-icon">G</span>知识图谱</a>
+            <a class="active"><span class="nav-icon">R</span>学习路径</a>
+            <a><span class="nav-icon">A</span>学习评估</a>
+          </nav>
+          <div class="side-card"><span>画像时间</span><strong>60 分钟</strong><span>周末可用 · 每周预算</span></div>
+        </aside>
+        <section class="main">
+          <header class="topbar">
+            <div><h2>主线任务地图</h2><p>根据学生画像、知识图谱和掌握度动态规划</p></div>
+            <div class="user"><button class="button secondary">切换章节</button><button class="button">重新规划</button></div>
+          </header>
+          <div class="content">
+            <div class="grid-5">
+              <div class="metric"><span>今日任务</span><strong>1</strong><small>必须当天完成</small></div>
+              <div class="metric"><span>本周预算</span><strong>60</strong><small>分钟</small></div>
+              <div class="metric"><span>排期日期</span><strong>周六 / 周日</strong><small>来自画像</small></div>
+              <div class="metric"><span>当前章节</span><strong>第 8 章</strong><small>文件操作</small></div>
+              <div class="metric"><span>达标进度</span><strong>0 / 10</strong><small>本章关卡</small></div>
+            </div>
+            <section class="path-layout">
+              <div class="quest-map">
+                <div class="road"></div>
+                <div class="quest"><div class="quest-card"><div class="tag-row"><span class="status blue">今日任务</span><span class="tag">未学习</span></div><strong>第 8 章 文件操作</strong><p>周六 · 30 分钟 · 建立章节整体认知。</p></div><div class="quest-dot current">1</div></div>
+                <div class="quest"><div class="quest-card"><div class="tag-row"><span class="status">周日任务</span><span class="tag">待学习</span></div><strong>8.1 显示和输入数据</strong><p>周日 · 30 分钟 · 完成输入输出短练习。</p></div><div class="quest-dot">2</div></div>
+                <div class="quest"><div class="quest-card"><div class="tag-row"><span class="status gray">2026-05-23 周六</span><span class="tag">后续关卡</span></div><strong>8.1.2 输入数据</strong><p>后续可继续学习，完成后触发知识点评估。</p></div><div class="quest-dot">3</div></div>
+                <div class="quest"><div class="quest-card"><div class="tag-row"><span class="status gray">2026-05-24 周日</span><span class="tag">后续关卡</span></div><strong>8.2 文件操作</strong><p>练习文件读写和异常处理联动。</p></div><div class="quest-dot">4</div></div>
+              </div>
+              <aside class="panel">
+                <div class="panel-title"><h3>当前章节</h3><span>可切换</span></div>
+                <div class="chapter-list">
+                  <div class="chapter"><strong>第 4 章 字符串与正则表达式</strong><small>0/12</small></div>
+                  <div class="chapter"><strong>第 5 章 字典和集合</strong><small>0/11</small></div>
+                  <div class="chapter"><strong>第 6 章 函数与模块</strong><small>0/17</small></div>
+                  <div class="chapter"><strong>第 7 章 Python 的控制语句</strong><small>0/14</small></div>
+                  <div class="chapter active"><strong>第 8 章 文件操作</strong><small>0/10</small></div>
+                  <div class="chapter"><strong>第 9 章 异常处理</strong><small>0/5</small></div>
+                  <div class="chapter"><strong>第 10 章 面向对象程序设计</strong><small>0/13</small></div>
+                </div>
+                <div style="height:14px"></div>
+                <div class="detail-block"><strong>动态调整规则</strong><p>若评估未通过，路径会收缩到失败知识点和前置依赖；通过后回到主线下一个知识点。</p></div>
+              </aside>
+            </section>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="mock-frame">
+      <div class="frame-caption">
+        <div>
+          <h2>06 知识点学习页：多智能体生成教学资源</h2>
+          <p>从学习路径地图点击某个关卡进入；页面先生成并组织教学资源，学习完成后再进入评估。</p>
+        </div>
+        <span class="status">路径节点进入学习页</span>
+      </div>
+      <div class="screen app">
+        <aside class="sidebar">
+          <div class="brand"><span class="brand-mark">AI</span><div><h3>智学引擎</h3><small>知识点学习</small></div></div>
+          <nav class="nav">
+            <a><span class="nav-icon">P</span>学生画像</a>
+            <a><span class="nav-icon">K</span>课程知识库</a>
+            <a><span class="nav-icon">G</span>知识图谱</a>
+            <a><span class="nav-icon">R</span>学习路径</a>
+            <a class="active"><span class="nav-icon">L</span>知识点学习</a>
+            <a><span class="nav-icon">A</span>学习评估</a>
+          </nav>
+          <div class="side-card"><span>来源关卡</span><strong>地图 3</strong><span>第 9 章 异常处理</span></div>
+        </aside>
+        <section class="main">
+          <header class="topbar">
+            <div><h2>第 9 章 异常处理 · 知识点学习</h2><p>多 Agent 根据学生画像和本地知识库生成教学资源，先学再评估。</p></div>
+            <div class="user"><button class="button secondary">返回学习路径</button><button class="button">完成学习，进入评估</button></div>
+          </header>
+          <div class="content study-layout">
+            <aside class="panel">
+              <div class="panel-title"><h3>学习目录</h3><span>建议 30 分钟</span></div>
+              <div class="lesson-outline">
+                <div class="outline-item active"><strong>1. 异常是什么</strong><small>报错现场与异常类型</small></div>
+                <div class="outline-item"><strong>2. try / except</strong><small>捕获顺序和常见误区</small></div>
+                <div class="outline-item"><strong>3. finally 与资源释放</strong><small>文件读写的安全收尾</small></div>
+                <div class="outline-item"><strong>4. 代码实操</strong><small>成绩文件读取器</small></div>
+                <div class="outline-item"><strong>5. 学习评估</strong><small>小测 + 代码任务</small></div>
+              </div>
+              <div style="height:14px"></div>
+              <div class="detail-block"><strong>个性化依据</strong><p>画像显示该学生偏好代码实操与短练习，且每周周末仅 60 分钟，因此页面优先展示可直接练习的资源。</p></div>
+            </aside>
+            <section class="panel">
+              <div class="panel-title"><h3>教学资源阅读区</h3><span>由多智能体实时生成</span></div>
+              <div class="lesson-reader">
+                <div class="reader-block">
+                  <div class="tag-row">
+                    <span class="status blue">讲解文档 Agent</span>
+                    <span class="tag">Markdown</span>
+                    <span class="tag">匹配代码实操偏好</span>
+                  </div>
+                  <h3>异常处理：让程序在出错后仍能解释、恢复和收尾</h3>
+                  <p>异常不是“程序失败”的终点，而是程序告诉你“某个操作没有按预期发生”。对于文件读取、用户输入和网络请求这类不稳定场景，异常处理能让程序给出清晰反馈，并决定是否继续执行。</p>
+                </div>
+                <div class="reader-block">
+                  <div class="tag-row"><span class="status">思维导图 Agent</span><span class="tag">结构化理解</span></div>
+                  <div class="mindmap-lite">
+                    <div class="mind-node">异常类型</div>
+                    <div class="mind-node">try / except</div>
+                    <div class="mind-node">else / finally</div>
+                    <div class="mind-node">文件读写异常</div>
+                  </div>
+                </div>
+                <div class="reader-block">
+                  <div class="tag-row"><span class="status warn">代码实操 Agent</span><span class="tag">可运行案例</span></div>
+                  <div class="code-block">try:
+    with open("scores.csv", "r", encoding="utf-8") as file:
+        rows = file.readlines()
+except FileNotFoundError:
+    print("成绩文件不存在，请检查路径")
+finally:
+    print("文件读取流程结束")</div>
+                </div>
+              </div>
+            </section>
+            <aside class="panel">
+              <div class="panel-title"><h3>Agent 协作状态</h3><span>生成中</span></div>
+              <div class="agent-stack">
+                <div class="agent"><strong>画像 Agent</strong><small>读取学生弱项：函数、异常处理；资源偏好：代码实操。</small></div>
+                <div class="agent"><strong>检索 Agent</strong><small>从 Milvus 召回本章 chunks 和相邻依赖节点。</small></div>
+                <div class="agent"><strong>文档 Agent</strong><small>生成结构化讲解文档和概念总结。</small></div>
+                <div class="agent"><strong>题库 Agent</strong><small>生成分层练习和自动评分要点。</small></div>
+                <div class="agent"><strong>多模态 Agent</strong><small>生成视频脚本和思维导图结构。</small></div>
+              </div>
+              <div style="height:14px"></div>
+              <div class="detail-block"><strong>下一步</strong><p>学生完成资源学习后点击“进入评估”。评估结果才会更新掌握度和学习路径。</p></div>
+              <button class="button">完成学习，进入评估</button>
+            </aside>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="mock-frame">
+      <div class="frame-caption">
+        <div>
+          <h2>07 学习评估与动态重规划</h2>
+          <p>学习完毕后进入评估页；通过则解锁下一关，未通过则触发补救路径并动态调整学习规划。</p>
+        </div>
+        <span class="status warn">评估结果驱动路径变化</span>
+      </div>
+      <div class="screen app">
+        <aside class="sidebar">
+          <div class="brand"><span class="brand-mark">AI</span><div><h3>智学引擎</h3><small>学习评估</small></div></div>
+          <nav class="nav">
+            <a><span class="nav-icon">P</span>学生画像</a>
+            <a><span class="nav-icon">K</span>课程知识库</a>
+            <a><span class="nav-icon">G</span>知识图谱</a>
+            <a><span class="nav-icon">R</span>学习路径</a>
+            <a><span class="nav-icon">L</span>知识点学习</a>
+            <a class="active"><span class="nav-icon">A</span>学习评估</a>
+          </nav>
+          <div class="side-card"><span>评估节点</span><strong>异常处理</strong><span>阈值 75 分 · 未达标重规划</span></div>
+        </aside>
+        <section class="main">
+          <header class="topbar">
+            <div><h2>第 9 章 异常处理 · 学习评估</h2><p>用小测与代码任务判断是否真正掌握，再反馈给知识图谱和学习路径。</p></div>
+            <div class="user"><button class="button secondary">回到学习页</button><button class="button">提交评估</button></div>
+          </header>
+          <div class="content assessment-layout">
+            <section class="panel">
+              <div class="panel-title"><h3>评估任务</h3><span>小测 + 代码实操</span></div>
+              <div class="question-list">
+                <div class="question-card">
+                  <div class="tag-row"><span class="status blue">选择题</span><span class="tag">基础概念</span></div>
+                  <strong>当文件不存在时，Python 通常会抛出哪类异常？</strong>
+                  <div class="choice-grid">
+                    <div class="choice">A. ValueError</div>
+                    <div class="choice selected">B. FileNotFoundError</div>
+                    <div class="choice">C. TypeError</div>
+                    <div class="choice">D. IndexError</div>
+                  </div>
+                </div>
+                <div class="question-card">
+                  <div class="tag-row"><span class="status warn">代码题</span><span class="tag">文件读写异常处理</span></div>
+                  <strong>补全代码：读取 scores.csv，如果文件不存在则输出友好提示，并保证流程结束时打印“读取结束”。</strong>
+                  <div class="code-block">try:
+    # TODO: open scores.csv and read lines
+except ______:
+    print("文件不存在")
+finally:
+    print("读取结束")</div>
+                </div>
+                <div class="question-card">
+                  <div class="tag-row"><span class="status">解释题</span><span class="tag">认知迁移</span></div>
+                  <strong>请用自己的话说明 finally 代码块适合放什么逻辑。</strong>
+                  <div class="input">例如：关闭文件、释放资源、记录日志等必须执行的收尾动作。</div>
+                </div>
+              </div>
+            </section>
+            <aside class="panel">
+              <div class="panel-title"><h3>评估反馈与路径分支</h3><span>动态调整</span></div>
+              <div class="grid-3" style="grid-template-columns:1fr 1fr 1fr">
+                <div class="metric"><span>当前得分</span><strong>68</strong><small>未达标</small></div>
+                <div class="metric"><span>通过阈值</span><strong>75</strong><small>系统规则</small></div>
+                <div class="metric"><span>掌握状态</span><strong>弱项</strong><small>红色节点</small></div>
+              </div>
+              <div style="height:14px"></div>
+              <div class="branch-panel fail">
+                <strong>未通过：触发补救路径</strong>
+                <p>系统将知识图谱中“异常处理”节点标记为严重弱项，并重新规划路径：先回看文件操作和 try/except 捕获顺序，再安排针对性代码练习。</p>
+                <button class="button">查看补救路径</button>
+              </div>
+              <div class="branch-panel pass">
+                <strong>通过：回到主线下一关</strong>
+                <p>如果得分达到阈值，节点变为达标良好或精通，路径自动解锁下一个知识点，继续主线任务。</p>
+                <button class="button secondary">回到主线地图</button>
+              </div>
+              <div style="height:14px"></div>
+              <div class="detail-block"><strong>回写数据</strong><p>评估结果会同步更新 MySQL 掌握记录、Neo4j 节点状态、学生画像弱项与后续路径规划。</p></div>
+            </aside>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="sources">
+      <h2>设计参考与映射</h2>
+      <ul>
+        <li>Coursera：课程列表、学习目标与技能收益型卡片，用于课程知识库和资源包的卡片组织。</li>
+        <li>Khan Academy：掌握度目标、进度仪表、任务与技能掌握反馈，用于画像维度、掌握状态和评估闭环。</li>
+        <li>Duolingo：路径式关卡、今日任务和连续学习动机，用于学习路径地图，但去掉过度游戏化视觉，保留专业工作台质感。</li>
+        <li>Notion / Linear 类工作台：左侧导航、顶部上下文、主工作区 + 右侧详情，保证多模块系统仍可扫读。</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,21 @@
+[project]
+name = "personalized-learning-agents-api"
+version = "0.1.0"
+description = "FastAPI backend for a personalized multi-agent learning resource generator"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi",
+  "httpx",
+  "email-validator",
+  "passlib[bcrypt]==1.7.4",
+  "bcrypt==3.2.0",
+  "pymysql",
+  "pydantic",
+  "python-jose[cryptography]",
+  "pytest",
+  "sqlalchemy",
+  "uvicorn",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
