@@ -1,0 +1,98 @@
+{
+  "course": "C++算法学习",
+  "major": "计算机科学与技术",
+  "level": "本科",
+  "description": "面向本科生的 C++ 算法课程：从复杂度分析出发，覆盖基础数据结构、排序与二分、递归分治、搜索、动态规划、图论与贪心，配套可运行的 C++ 示例与练习。",
+  "root_id": "cpp-root",
+  "chapters": [
+    {
+      "id": "cpp-1",
+      "name": "第1章 算法与复杂度",
+      "file": "corpus/chapter-01.md",
+      "sections": [
+        { "id": "cpp-1-1", "name": "什么是算法", "node_type": "concept", "difficulty": "basic", "prerequisites": [] },
+        { "id": "cpp-1-2", "name": "时间复杂度与大O表示法", "node_type": "concept", "difficulty": "basic", "prerequisites": ["cpp-1-1"] },
+        { "id": "cpp-1-3", "name": "空间复杂度与常见复杂度类别", "node_type": "concept", "difficulty": "basic", "prerequisites": ["cpp-1-2"] },
+        { "id": "cpp-1-4", "name": "C++算法编程基础与STL总览", "node_type": "tool", "difficulty": "basic", "prerequisites": ["cpp-1-1"] }
+      ]
+    },
+    {
+      "id": "cpp-2",
+      "name": "第2章 基础数据结构",
+      "file": "corpus/chapter-02.md",
+      "sections": [
+        { "id": "cpp-2-1", "name": "数组、前缀和与差分", "node_type": "method", "difficulty": "basic", "prerequisites": ["cpp-1-4"] },
+        { "id": "cpp-2-2", "name": "栈与队列", "node_type": "concept", "difficulty": "basic", "prerequisites": ["cpp-2-1"] },
+        { "id": "cpp-2-3", "name": "单调栈", "node_type": "method", "difficulty": "intermediate", "prerequisites": ["cpp-2-2"] },
+        { "id": "cpp-2-4", "name": "链表与双指针", "node_type": "method", "difficulty": "basic", "prerequisites": ["cpp-2-2"] },
+        { "id": "cpp-2-5", "name": "哈希表", "node_type": "tool", "difficulty": "basic", "prerequisites": ["cpp-2-1"] }
+      ]
+    },
+    {
+      "id": "cpp-3",
+      "name": "第3章 排序与二分",
+      "file": "corpus/chapter-03.md",
+      "sections": [
+        { "id": "cpp-3-1", "name": "常见排序算法", "node_type": "method", "difficulty": "basic", "prerequisites": ["cpp-2-1"] },
+        { "id": "cpp-3-2", "name": "STL sort与自定义比较器", "node_type": "tool", "difficulty": "basic", "prerequisites": ["cpp-3-1"] },
+        { "id": "cpp-3-3", "name": "二分查找", "node_type": "method", "difficulty": "basic", "prerequisites": ["cpp-3-1"] },
+        { "id": "cpp-3-4", "name": "二分答案", "node_type": "method", "difficulty": "intermediate", "prerequisites": ["cpp-3-3"] }
+      ]
+    },
+    {
+      "id": "cpp-4",
+      "name": "第4章 递归与分治",
+      "file": "corpus/chapter-04.md",
+      "sections": [
+        { "id": "cpp-4-1", "name": "递归的设计与调用栈", "node_type": "concept", "difficulty": "basic", "prerequisites": ["cpp-2-2"] },
+        { "id": "cpp-4-2", "name": "分治策略", "node_type": "method", "difficulty": "intermediate", "prerequisites": ["cpp-4-1"] },
+        { "id": "cpp-4-3", "name": "归并排序与逆序对", "node_type": "case", "difficulty": "intermediate", "prerequisites": ["cpp-4-2", "cpp-3-1"] }
+      ]
+    },
+    {
+      "id": "cpp-5",
+      "name": "第5章 搜索算法",
+      "file": "corpus/chapter-05.md",
+      "sections": [
+        { "id": "cpp-5-1", "name": "深度优先搜索DFS", "node_type": "method", "difficulty": "basic", "prerequisites": ["cpp-4-1"] },
+        { "id": "cpp-5-2", "name": "回溯与剪枝", "node_type": "method", "difficulty": "intermediate", "prerequisites": ["cpp-5-1"] },
+        { "id": "cpp-5-3", "name": "广度优先搜索BFS", "node_type": "method", "difficulty": "basic", "prerequisites": ["cpp-5-1"] },
+        { "id": "cpp-5-4", "name": "BFS求最短路", "node_type": "case", "difficulty": "intermediate", "prerequisites": ["cpp-5-3"] }
+      ]
+    },
+    {
+      "id": "cpp-6",
+      "name": "第6章 动态规划",
+      "file": "corpus/chapter-06.md",
+      "sections": [
+        { "id": "cpp-6-1", "name": "动态规划入门与记忆化搜索", "node_type": "concept", "difficulty": "basic", "prerequisites": ["cpp-4-1"] },
+        { "id": "cpp-6-2", "name": "线性DP：最长上升子序列与最长公共子序列", "node_type": "method", "difficulty": "intermediate", "prerequisites": ["cpp-6-1"] },
+        { "id": "cpp-6-3", "name": "背包问题", "node_type": "method", "difficulty": "intermediate", "prerequisites": ["cpp-6-1"] },
+        { "id": "cpp-6-4", "name": "区间DP入门", "node_type": "method", "difficulty": "advanced", "prerequisites": ["cpp-6-2"] }
+      ]
+    },
+    {
+      "id": "cpp-7",
+      "name": "第7章 图论基础",
+      "file": "corpus/chapter-07.md",
+      "sections": [
+        { "id": "cpp-7-1", "name": "图的存储", "node_type": "concept", "difficulty": "basic", "prerequisites": ["cpp-2-4"] },
+        { "id": "cpp-7-2", "name": "图的遍历与连通性", "node_type": "method", "difficulty": "basic", "prerequisites": ["cpp-7-1", "cpp-5-1"] },
+        { "id": "cpp-7-3", "name": "最短路算法", "node_type": "method", "difficulty": "advanced", "prerequisites": ["cpp-7-2"] },
+        { "id": "cpp-7-4", "name": "最小生成树", "node_type": "method", "difficulty": "advanced", "prerequisites": ["cpp-7-2"] },
+        { "id": "cpp-7-5", "name": "拓扑排序", "node_type": "method", "difficulty": "intermediate", "prerequisites": ["cpp-7-2"] }
+      ]
+    },
+    {
+      "id": "cpp-8",
+      "name": "第8章 贪心与高级数据结构",
+      "file": "corpus/chapter-08.md",
+      "sections": [
+        { "id": "cpp-8-1", "name": "贪心算法与交换论证", "node_type": "method", "difficulty": "intermediate", "prerequisites": ["cpp-1-2"] },
+        { "id": "cpp-8-2", "name": "经典贪心问题：区间调度", "node_type": "case", "difficulty": "intermediate", "prerequisites": ["cpp-8-1"] },
+        { "id": "cpp-8-3", "name": "并查集", "node_type": "method", "difficulty": "intermediate", "prerequisites": ["cpp-2-4"] },
+        { "id": "cpp-8-4", "name": "树状数组与线段树", "node_type": "method", "difficulty": "advanced", "prerequisites": ["cpp-8-3"] }
+      ]
+    }
+  ]
+}

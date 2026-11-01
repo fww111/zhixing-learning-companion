@@ -4,6 +4,16 @@
 
 当前技术总览见 [docs/current-technical-overview.md](docs/current-technical-overview.md)。
 
+## 华为 ICT 大赛赛题二（AgentArts）迁移
+
+本项目正作为底座迁移到华为云 AgentArts 平台参赛，相关设计、蓝图与 MCP 服务：
+
+- [docs/agentarts/01-场景定义与Agent架构.md](docs/agentarts/01-场景定义与Agent架构.md) — 场景识别、多 Agent 架构、模型与资产选择
+- [docs/agentarts/02-AgentArts工作流搭建蓝图.md](docs/agentarts/02-AgentArts工作流搭建蓝图.md) — 平台侧节点级搭建说明
+- [docs/agentarts/03-MCP服务接口契约.md](docs/agentarts/03-MCP服务接口契约.md) — 三个自定义 MCP Server 的工具契约
+- [apps/mcp/](apps/mcp/README.md) — MCP Server 实现（uv 项目，`uv run pytest` 验证）
+- [docs/agentarts/05-技术借鉴与增强.md](docs/agentarts/05-技术借鉴与增强.md) — 源自"伯乐"项目的分块预设体系与知识库检索自动评估闭环
+
 ## 核心能力
 
 - 用户注册、登录、JWT 鉴权和当前用户查询。

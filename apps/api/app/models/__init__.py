@@ -1,3 +1,3 @@
-from app.models import course, profile_record, user
+from app.models import course, kb_evaluation, profile_record, user
 
-__all__ = ["course", "profile_record", "user"]
+__all__ = ["course", "kb_evaluation", "profile_record", "user"]

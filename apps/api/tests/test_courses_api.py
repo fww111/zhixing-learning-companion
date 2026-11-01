@@ -161,8 +161,15 @@ class NoopMaterialTaskQueue:
         self.enqueued = []
         self.vector_rebuilds = []
 
-    def enqueue(self, user_id, course_id, material_id):
-        self.enqueued.append({"user_id": user_id, "course_id": course_id, "material_id": material_id})
+    def enqueue(self, user_id, course_id, material_id, chunk_params=None):
+        self.enqueued.append(
+            {
+                "user_id": user_id,
+                "course_id": course_id,
+                "material_id": material_id,
+                "chunk_params": chunk_params,
+            }
+        )
 
     def enqueue_vector_rebuild(self, user_id, course_id):
         self.vector_rebuilds.append({"user_id": user_id, "course_id": course_id})

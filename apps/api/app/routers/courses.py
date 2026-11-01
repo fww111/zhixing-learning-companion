@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.db import get_db
+from app.services.chunking_service import CHUNK_PRESET_IDS
 from app.models.learning_path import CourseLearningPath, CourseLearningPathRequest
 from app.models.user import UserRead
 from app.routers.auth import current_user
@@ -115,12 +116,20 @@ async def upload_material(
     course_id: int,
     file: Annotated[UploadFile, File()],
     request: Request,
+    chunk_preset: Annotated[str, Form()] = "general",
     user: UserRead = Depends(current_user),
     course_service: CourseService = Depends(service),
 ):
+    if chunk_preset not in CHUNK_PRESET_IDS:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"unknown chunk preset: {chunk_preset}")
     try:
         material = await course_service.add_material_from_upload(user.id, course_id, file)
-        request.app.state.material_task_queue.enqueue(user.id, course_id, material.id)
+        request.app.state.material_task_queue.enqueue(
+            user.id,
+            course_id,
+            material.id,
+            chunk_params={"chunk_preset_id": chunk_preset},
+        )
         return material
     except CourseNotFoundError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="course not found") from None

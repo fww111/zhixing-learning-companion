@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import sessionmaker
 
 from app.db import SessionLocal, get_db, init_db
-from app.routers import assessments, auth, chat, courses, paths, profiles, resources, tts, tutor
+from app.routers import assessments, auth, chat, courses, kb_evaluations, paths, profiles, resources, tts, tutor
 from app.services.material_task_queue import MaterialTaskQueue
 
 
@@ -46,6 +46,7 @@ def create_app(session_factory: sessionmaker | None = None) -> FastAPI:
     app.include_router(profiles.router)
     app.include_router(resources.router)
     app.include_router(courses.router)
+    app.include_router(kb_evaluations.router)
     app.include_router(paths.router)
     app.include_router(assessments.router)
     app.include_router(tts.router)

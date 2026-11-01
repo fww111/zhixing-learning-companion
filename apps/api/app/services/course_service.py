@@ -13,7 +13,7 @@ from app.core.config import settings
 from app.core.storage import course_upload_dir, safe_upload_name
 from app.models.course import Course, CourseMaterial, GraphBuildJob, KnowledgeChunk, KnowledgeNodeMastery
 from app.schemas.course import CourseCreate
-from app.services.chunking_service import chunk_pages
+from app.services.chunking_service import chunk_pages, chunk_pages_with_preset, resolve_chunk_params
 from app.services.graph_store import Neo4jGraphStore
 from app.services.material_parser import MaterialParseError, parse_material
 from app.services.vector_service import MilvusVectorService
@@ -1363,7 +1363,13 @@ class CourseService:
         self._delete_course_graph(course.user_id, course.id)
         self.db.flush()
 
-    def process_material_by_id(self, user_id: int, course_id: int, material_id: int) -> None:
+    def process_material_by_id(
+        self,
+        user_id: int,
+        course_id: int,
+        material_id: int,
+        chunk_params: dict | None = None,
+    ) -> None:
         material = self.db.scalar(
             select(CourseMaterial).where(
                 CourseMaterial.id == material_id,
@@ -1394,7 +1400,11 @@ class CourseService:
             pages = self.parser(material.storage_path, material.file_type, settings.ocr_lang, -1)
             material.parse_status = "chunking"
             self.db.commit()
-            chunks = self.chunker(pages)
+            if chunk_params:
+                resolved = resolve_chunk_params(None, None, chunk_params)
+                chunks = chunk_pages_with_preset(pages, resolved)
+            else:
+                chunks = self.chunker(pages)
             self.db.execute(
                 delete(KnowledgeChunk).where(
                     KnowledgeChunk.course_id == course_id,

@@ -40,7 +40,7 @@ SessionLocal = create_session_factory(engine)
 
 
 def init_db() -> None:
-    from app.models import course, profile_record, user  # noqa: F401
+    from app.models import course, kb_evaluation, profile_record, user  # noqa: F401
 
     _ensure_mysql_prerequisite_indexes()
     Base.metadata.create_all(bind=engine)
