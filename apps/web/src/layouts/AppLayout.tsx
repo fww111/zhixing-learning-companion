@@ -2,6 +2,7 @@ import { Activity, BookOpen, CheckCircle2, GitBranch, LogOut, Network, Route, Us
 import { useEffect, useState, type ReactNode } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { listCourses, type Course } from "../api/client";
+import { loadRuntimeMode, saveRuntimeMode, type AgentArtsMode } from "../api/agentarts";
 import { TutorAssistantFloating } from "../components/TutorAssistantFloating";
 import { useAuth } from "../state/auth";
 import { isProfileScopedToCourse } from "../state/profileScopeModel";
@@ -22,6 +23,7 @@ export function AppLayout() {
   const navigate = useNavigate();
   const courseId = location.pathname.match(/\/courses\/(\d+)/)?.[1];
   const [courses, setCourses] = useState<Course[]>([]);
+  const [runtimeMode, setRuntimeMode] = useState<AgentArtsMode>(() => loadRuntimeMode());
   const [fallbackCourseId, setFallbackCourseId] = useState<number | undefined>(() => readCurrentCourseId());
   const activeCourseId = courseId ? Number(courseId) : fallbackCourseId;
   const activeCourse = courses.find((course) => course.id === activeCourseId);
@@ -105,6 +107,11 @@ export function AppLayout() {
     );
   }
 
+  function handleRuntimeModeChange(mode: AgentArtsMode) {
+    setRuntimeMode(mode);
+    saveRuntimeMode(mode);
+  }
+
   function handleLogout() {
     logout();
     navigate("/auth", { replace: true });
@@ -166,6 +173,25 @@ export function AppLayout() {
             <span>当前课程</span>
             <strong>{activeCourse?.name || (activeCourseId ? `课程 ${activeCourseId}` : "未选择课程")}</strong>
             <small>{activeCourseProfile ? "侧边栏已绑定该课程" : "先完成该课程画像"}</small>
+          </div>
+        </div>
+        <div className="runtime-mode-switch" role="group" aria-label="运行模式切换">
+          <span className="nav-section-label">运行模式</span>
+          <div className="mode-options">
+            <button
+              type="button"
+              className={runtimeMode === "local" ? "active" : ""}
+              onClick={() => handleRuntimeModeChange("local")}
+            >
+              本地模式
+            </button>
+            <button
+              type="button"
+              className={runtimeMode === "agentarts" ? "active" : ""}
+              onClick={() => handleRuntimeModeChange("agentarts")}
+            >
+              AgentArts
+            </button>
           </div>
         </div>
       </aside>

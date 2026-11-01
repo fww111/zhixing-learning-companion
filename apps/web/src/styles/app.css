@@ -2740,6 +2740,46 @@ textarea {
   margin-top: 4px;
 }
 
+.runtime-mode-switch {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.runtime-mode-switch .nav-section-label {
+  color: #94a3b8;
+}
+
+.mode-options {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  display: grid;
+  gap: 4px;
+  grid-template-columns: 1fr 1fr;
+  padding: 4px;
+}
+
+.mode-options button {
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: #cbd5e1;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 7px 6px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.mode-options button:hover {
+  color: #ffffff;
+}
+
+.mode-options button.active {
+  background: var(--color-accent);
+  color: #ffffff;
+}
+
 .app-topbar {
   border-left: 0;
   border-radius: 0;

@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import sessionmaker
 
 from app.db import SessionLocal, get_db, init_db
-from app.routers import assessments, auth, chat, courses, kb_evaluations, paths, profiles, resources, tts, tutor
+from app.routers import agentarts_proxy, assessments, auth, chat, courses, kb_evaluations, paths, profiles, resources, tts, tutor
 from app.services.material_task_queue import MaterialTaskQueue
 
 
@@ -42,6 +42,7 @@ def create_app(session_factory: sessionmaker | None = None) -> FastAPI:
         app.dependency_overrides[get_db] = override_get_db
 
     app.include_router(auth.router)
+    app.include_router(agentarts_proxy.router)
     app.include_router(chat.router)
     app.include_router(profiles.router)
     app.include_router(resources.router)
