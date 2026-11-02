@@ -2,6 +2,7 @@ import { Bot, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { sendTutorMessage, type Course, type TutorChatResponse } from "../api/client";
+import { loadRuntimeMode, streamAgentArtsChat } from "../api/agentarts";
 import { useAuth } from "../state/auth";
 import { getSharedAttention } from "../state/attentionShared";
 import { readCurrentCourseId } from "../state/currentCourse";
@@ -88,6 +89,54 @@ export function TutorAssistantFloating({ courses, activeCourseId, openSignal = 0
     return null;
   }
 
+  /** AgentArts 模式：经后端代理走平台应用 API（SSE 流式），平台未配置时后端返回 503 提示切回本地模式 */
+  async function sendViaAgentArts(content: string) {
+    const userMessage: TutorWorkbenchMessage = {
+      id: `user-${Date.now()}`,
+      role: "user",
+      content
+    };
+    setMessages((items) => [...items, userMessage]);
+    setLoading(true);
+    setError("");
+    const streamId = `assistant-stream-${Date.now()}`;
+    let accumulated = "";
+    try {
+      await streamAgentArtsChat(
+        {
+          token,
+          message: content,
+          courseId: context.courseId,
+          nodeId: context.nodeId,
+          history: messages.slice(-6).map((message) => ({ role: message.role, content: message.content }))
+        },
+        {
+          onDelta: (chunk) => {
+            accumulated += chunk;
+            setMessages((items) => {
+              const last = items[items.length - 1];
+              if (last && last.id === streamId) {
+                return [...items.slice(0, -1), { ...last, content: accumulated }];
+              }
+              return [...items, { id: streamId, role: "assistant", content: accumulated }];
+            });
+          }
+        }
+      );
+      if (!accumulated.trim()) {
+        setMessages((items) => [...items, {
+          id: `assistant-empty-${Date.now()}`,
+          role: "assistant",
+          content: "（AgentArts 模式未返回内容，可切换回本地模式使用完整功能。）"
+        }]);
+      }
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "AgentArts 请求失败");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function handleSend() {
     const content = input.trim() || (attachments.length ? "请结合我上传的图片进行讲解。" : "");
     await sendMessage(content);
@@ -96,6 +145,10 @@ export function TutorAssistantFloating({ courses, activeCourseId, openSignal = 0
   /** 追问选项点击等场景：直接发送指定文本（不经过输入框） */
   async function sendMessage(content: string) {
     if (!context.courseId || !content) {
+      return;
+    }
+    if (loadRuntimeMode() === "agentarts") {
+      await sendViaAgentArts(content);
       return;
     }
     const userMessage: TutorWorkbenchMessage = {
