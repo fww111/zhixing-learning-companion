@@ -35,7 +35,6 @@ import {
 } from "../api/client";
 import { AgentTimeline } from "../components/AgentTimeline";
 import { AssessmentPanel } from "../components/AssessmentPanel";
-import { AttentionStatusCard } from "../components/AttentionStatusCard";
 import { MindMapViewer } from "../components/MindMapViewer";
 import { ResourceCard } from "../components/ResourceCard";
 import {
@@ -57,7 +56,6 @@ import {
   knowledgeLearningNavigationSignature,
   knowledgeLearningRouteState
 } from "./knowledgeLearningRouteStateModel";
-import { useAttentionAnalysis } from "../composables/useAttentionAnalysis";
 import { useAuth } from "../state/auth";
 
 type LearningViewMode = "learn" | "assess";
@@ -322,57 +320,6 @@ export function KnowledgeLearningPage() {
     }
   }
 
-  // ===== 学习状态感知（issue #14）：默认关闭；纯本机推理，上报的只有聚合指标 =====
-  const attentionVideoRef = useRef<HTMLVideoElement | null>(null);
-  const [attentionEnabled, setAttentionEnabled] = useState(false);
-  const [attentionBusy, setAttentionBusy] = useState(false);
-  const attention = useAttentionAnalysis({
-    onSample: (sample) => {
-      void (async () => {
-        if (!Number.isFinite(numericCourseId) || !decodedNodeId) return;
-        try {
-          await createLearningProfileEvent(token, numericCourseId, {
-            event_type: "attention_sample",
-            topic,
-            knowledge_node_id: decodedNodeId,
-            detail: `${topic}: 专注度采样（主导状态 ${sample.dominant}）`,
-            event_payload: { ...sample },
-            evidence_strength: "weak"
-          });
-        } catch {
-          // 感知上报失败绝不阻塞学习主流程
-        }
-      })();
-    }
-  });
-  const attentionStopRef = useRef(attention.stop);
-  attentionStopRef.current = attention.stop;
-
-  useEffect(
-    () => () => {
-      attentionStopRef.current();
-    },
-    []
-  );
-
-  async function handleAttentionEnable() {
-    if (!attentionVideoRef.current) return;
-    setAttentionBusy(true);
-    setAttentionEnabled(true);
-    try {
-      await attention.start(attentionVideoRef.current);
-    } catch {
-      // 失败保持卡片展开：错误信息（如拒绝授权）显示在卡片内，用户可关闭或重试
-    } finally {
-      setAttentionBusy(false);
-    }
-  }
-
-  function handleAttentionDisable() {
-    attentionStopRef.current();
-    setAttentionEnabled(false);
-  }
-
   async function completeClassroom() {
     await persistLessonState({
       current_stage: "test",
@@ -597,19 +544,6 @@ export function KnowledgeLearningPage() {
       </div>
 
       {error ? <div className="error">{error}</div> : null}
-
-      {viewMode === "learn" ? (
-        <AttentionStatusCard
-          busy={attentionBusy}
-          enabled={attentionEnabled}
-          onDisable={handleAttentionDisable}
-          onEnable={() => {
-            void handleAttentionEnable();
-          }}
-          status={attention.status}
-          videoRef={attentionVideoRef}
-        />
-      ) : null}
 
       {viewMode === "learn" ? (
         <div className="immersive-lesson-shell">

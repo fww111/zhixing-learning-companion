@@ -20,6 +20,8 @@ class TutorChatRequest(BaseModel):
     page_context: str = ""
     attachments: list[TutorAttachment] = Field(default_factory=list)
     history: list[dict[str, str]] = Field(default_factory=list)
+    # 学习状态感知（issue #15）：focused/confused/distracted/tired/no_face，空串表示未开启
+    attention_state: str = ""
 
 
 class TutorAgentEvent(BaseModel):
@@ -65,3 +67,5 @@ class TutorChatResponse(BaseModel):
     decision_report: dict[str, Any]
     multimodal_cards: list[TutorMultimodalCard]
     suggested_actions: list[TutorSuggestedAction]
+    # issue #16：可点击的追问选项（2-3 条，与当前知识点/问题上下文相关）
+    suggested_followups: list[str] = Field(default_factory=list)
