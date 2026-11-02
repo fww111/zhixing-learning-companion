@@ -53,3 +53,6 @@ cache/
 # IDE文件
 .idea/
 .vscode/
+
+# MediaPipe vision wasm 由 npm 脚本从 node_modules 拷贝（41MB，不入库）
+apps/web/public/mediapipe/wasm/
