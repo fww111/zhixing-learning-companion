@@ -8114,3 +8114,208 @@ textarea {
 .tutor-followups button:hover {
   background: rgba(56, 189, 248, 0.22);
 }
+
+/* ===== 多智能体协作可视化面板（issue #8） ===== */
+.agent-collaboration-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.acp-evidence-badge {
+  margin-left: auto;
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.14);
+  color: #7dd3fc;
+}
+
+.acp-stage-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.acp-stage {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.35);
+}
+
+.acp-stage.acp-done {
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+.acp-stage.acp-running {
+  border-color: rgba(56, 189, 248, 0.45);
+}
+
+.acp-stage.acp-failed {
+  border-color: rgba(220, 38, 38, 0.45);
+}
+
+.acp-icon {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.acp-icon.done { color: #22c55e; }
+.acp-icon.running { color: #38bdf8; }
+.acp-icon.failed { color: #ef4444; }
+.acp-icon.pending { color: #94a3b8; }
+
+.acp-stage-body { flex: 1; min-width: 0; }
+
+.acp-stage-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.acp-stage-head strong { font-size: 14px; }
+
+.acp-model-tier {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #c4b5fd;
+  background: rgba(139, 92, 246, 0.14);
+  padding: 1px 8px;
+  border-radius: 999px;
+}
+
+.acp-score {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fbbf24;
+}
+
+.acp-stage-body p {
+  margin: 4px 0 2px;
+  font-size: 13px;
+  color: #cbd5e1;
+}
+
+.acp-agent-name {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.acp-subtitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.acp-subtitle h3 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.acp-branches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.acp-branch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(15, 23, 42, 0.35);
+}
+
+.acp-branch-acp-done,
+.acp-branch-done {
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+.acp-branch div { min-width: 0; }
+
+.acp-branch strong {
+  display: block;
+  font-size: 13px;
+}
+
+.acp-branch small {
+  display: block;
+  color: #94a3b8;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.acp-explain {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 720px) {
+  .acp-explain { grid-template-columns: 1fr; }
+}
+
+.acp-dimension {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  padding: 5px 0;
+  border-bottom: 1px dashed rgba(148, 163, 184, 0.18);
+}
+
+.acp-dimension span { color: #94a3b8; flex-shrink: 0; }
+.acp-dimension strong { color: #e2e8f0; text-align: right; font-weight: 600; }
+
+.acp-graph-relations {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.acp-relation {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.acp-relation span { color: #94a3b8; flex-shrink: 0; }
+.acp-relation strong { color: #e2e8f0; text-align: right; font-weight: 600; }
+
+.acp-mastery {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.acp-mastery-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+
+.acp-mastery strong { font-size: 13px; }
+.acp-mastery small { margin-left: auto; color: #7dd3fc; font-size: 12px; }
+
+.acp-mastery.mastery-not_started .acp-mastery-dot { background: #94a3b8; }
+.acp-mastery.mastery-severe_weak .acp-mastery-dot { background: #dc2626; }
+.acp-mastery.mastery-basic .acp-mastery-dot { background: #f59e0b; }
+.acp-mastery.mastery-good .acp-mastery-dot { background: #86efac; }
+.acp-mastery.mastery-proficient .acp-mastery-dot { background: #16a34a; }

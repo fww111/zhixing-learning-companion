@@ -33,7 +33,7 @@ import {
   type StudentProfile,
   type WorkflowPackage
 } from "../api/client";
-import { AgentTimeline } from "../components/AgentTimeline";
+import { AgentCollaborationPanel } from "../components/AgentCollaborationPanel";
 import { AssessmentPanel } from "../components/AssessmentPanel";
 import { MindMapViewer } from "../components/MindMapViewer";
 import { ResourceCard } from "../components/ResourceCard";
@@ -171,7 +171,6 @@ export function KnowledgeLearningPage() {
     openmaicClassroom?.classroom_id
   );
   const assessmentThreshold = 0.75;
-  const agentEvents = result?.agent_events ?? [];
   const knowledgeContext = result?.knowledge_context ?? [];
   const graphConstraints = result?.graph_constraints;
   const retrievalTrace = result?.retrieval_trace ?? [];
@@ -695,7 +694,7 @@ export function KnowledgeLearningPage() {
           </section>
 
           <section className="lesson-insight-grid">
-            <AgentTimeline completed={Boolean(result)} events={agentEvents} running={loading} resourceTypes={resourceTypes} />
+            <AgentCollaborationPanel pkg={result} requestedTypes={resourceTypes} running={loading} />
             <section className="panel rag-guardrail-panel">
               <div className="panel-title">
                 <ShieldAlert size={18} />
