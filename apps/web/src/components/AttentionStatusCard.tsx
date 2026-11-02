@@ -55,10 +55,14 @@ export function AttentionStatusCard({
       </div>
 
       {!enabled ? (
-        <p className="attention-hint">
-          开启后在本机分析摄像头画面（专注/困惑/走神/疲劳），辅助 AI 在你卡住时主动换一种讲法。
-          画面不会离开你的电脑。
-        </p>
+        <>
+          {/* video 始终渲染（隐藏），保证点开启时 ref 可用 */}
+          <video className="attention-preview hidden-preview" muted playsInline ref={videoRef} />
+          <p className="attention-hint">
+            开启后在本机分析摄像头画面（专注/困惑/走神/疲劳），辅助 AI 在你卡住时主动换一种讲法。
+            画面不会离开你的电脑。
+          </p>
+        </>
       ) : (
         <div className="attention-body">
           <video className="attention-preview" muted playsInline ref={videoRef} />

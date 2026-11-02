@@ -358,12 +358,11 @@ export function KnowledgeLearningPage() {
   async function handleAttentionEnable() {
     if (!attentionVideoRef.current) return;
     setAttentionBusy(true);
+    setAttentionEnabled(true);
     try {
       await attention.start(attentionVideoRef.current);
-      setAttentionEnabled(true);
     } catch {
-      // 错误信息已在卡片内展示（如拒绝授权），开关回到关闭态
-      setAttentionEnabled(false);
+      // 失败保持卡片展开：错误信息（如拒绝授权）显示在卡片内，用户可关闭或重试
     } finally {
       setAttentionBusy(false);
     }

@@ -7969,6 +7969,15 @@ textarea {
   width: 110px;
 }
 
+/* 关闭态下 video 仍需在 DOM 中（点开启时 ref 可用），只是视觉隐藏 */
+.attention-preview.hidden-preview {
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  width: 1px;
+}
+
 .attention-meta {
   display: flex;
   flex-direction: column;
