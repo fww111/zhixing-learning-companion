@@ -147,6 +147,19 @@ export async function streamAgentArtsChat(
 ): Promise<void> {
   const maxAttempts = (options.reconnectLimit ?? 2) + 1;
   let attempt = 0;
+  // 一旦已向调用方吐出过数据，就不再整体重试，否则重新 POST 会让内容重复叠加
+  let receivedData = false;
+  const trackedHandlers: AgentArtsStreamHandlers = {
+    ...handlers,
+    onDelta: (chunk) => {
+      receivedData = true;
+      handlers.onDelta?.(chunk);
+    },
+    onEvent: (event) => {
+      receivedData = true;
+      handlers.onEvent?.(event);
+    },
+  };
 
   while (attempt < maxAttempts) {
     if (options.signal?.aborted) {
@@ -185,13 +198,19 @@ export async function streamAgentArtsChat(
         }
         throw new Error(`AgentArts 请求失败：HTTP ${response.status}`);
       }
-      await consumeStream(response, handlers);
+      await consumeStream(response, trackedHandlers);
       return;
     } catch (caught) {
       if (caught instanceof DOMException && caught.name === "AbortError") {
         if (options.signal?.aborted) {
           throw caught;
         }
+      }
+      // 已开始接收数据后发生的中断不自动重试，直接报错交由调用方处理，避免重复输出
+      if (receivedData) {
+        const error = caught instanceof Error ? caught : new Error(String(caught));
+        handlers.onError?.(error);
+        throw error;
       }
       attempt += 1;
       if (attempt >= maxAttempts) {

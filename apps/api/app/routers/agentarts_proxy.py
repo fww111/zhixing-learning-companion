@@ -15,6 +15,16 @@ from app.routers.auth import current_user
 
 router = APIRouter(prefix="/api/agentarts", tags=["agentarts"])
 
+# 平台载荷中由后端根据 JWT 与请求体控制的保留字段，禁止前端通过 extra 覆盖（防越权）
+RESERVED_PAYLOAD_KEYS = {
+    "user_id",
+    "course_id",
+    "node_id",
+    "global_variables",
+    "messages",
+    "stream",
+}
+
 
 class AgentArtsHistoryMessage(BaseModel):
     role: str
@@ -51,23 +61,32 @@ async def agentarts_chat(
     messages = [{"role": m.role, "content": m.content} for m in payload.history]
     messages.append({"role": "user", "content": payload.message})
 
-    # JWT 登录态映射为平台全局变量 user_id/course_id/node_id
-    global_variables = {
-        "user_id": str(user.id),
-        "course_id": payload.course_id,
-        "node_id": payload.node_id,
-    }
+    # JWT 登录态映射为平台全局变量 user_id/course_id/node_id。
+    # user_id 按平台定义使用数值型；值为 None 的字段不下发，避免把 null 发给平台。
+    global_variables: dict[str, Any] = {"user_id": user.id}
+    if payload.course_id is not None:
+        global_variables["course_id"] = payload.course_id
+    if payload.node_id is not None:
+        global_variables["node_id"] = payload.node_id
+
     platform_payload: dict[str, Any] = {
         "messages": messages,
         "stream": True,
         **global_variables,
         "global_variables": global_variables,
     }
-    platform_payload.update(payload.extra)
+    # 合并前从 extra 剥离身份/路由保留键，前端无法借 extra 冒充其他用户或篡改消息
+    safe_extra = {
+        key: value
+        for key, value in payload.extra.items()
+        if key not in RESERVED_PAYLOAD_KEYS
+    }
+    platform_payload.update(safe_extra)
 
     async def generate():
         async with httpx.AsyncClient(
-            timeout=httpx.Timeout(settings.agentarts_timeout_seconds, connect=10.0)
+            # 资源生成含多分支与反思循环，单阶段静默可能较长，read 单独放宽，避免流被提前切断
+            timeout=httpx.Timeout(connect=10.0, read=300.0, write=60.0, pool=60.0)
         ) as client:
             try:
                 upstream = await client.send(
@@ -92,9 +111,14 @@ async def agentarts_chat(
                 yield _sse_error(f"平台返回错误 {upstream.status_code}", detail)
                 return
 
-            async for chunk in upstream.aiter_raw():
-                if chunk:
-                    yield chunk
+            try:
+                async for chunk in upstream.aiter_raw():
+                    if chunk:
+                        yield chunk
+            except httpx.HTTPError as exc:
+                # 流转阶段平台断连/超时不应变成 500 无声中断，统一以 SSE error 告知前端
+                yield _sse_error("AgentArts 流式传输中断", str(exc))
+                return
 
     return StreamingResponse(
         generate(),
