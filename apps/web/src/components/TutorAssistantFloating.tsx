@@ -1,8 +1,9 @@
 import { Bot, Sparkles } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { sendTutorMessage, type Course, type TutorChatResponse } from "../api/client";
 import { useAuth } from "../state/auth";
+import { getSharedAttention } from "../state/attentionShared";
 import { readCurrentCourseId } from "../state/currentCourse";
 import {
   appendVoiceTranscript,
@@ -39,9 +40,13 @@ declare global {
 interface TutorAssistantFloatingProps {
   courses: Course[];
   activeCourseId?: number;
+  /** 外部（学习状态介入）触发打开的信号：数字递增表示打开一次 */
+  openSignal?: number;
+  /** 介入触发时预填并自动发送的消息 */
+  interventionMessage?: string;
 }
 
-export function TutorAssistantFloating({ courses, activeCourseId }: TutorAssistantFloatingProps) {
+export function TutorAssistantFloating({ courses, activeCourseId, openSignal = 0, interventionMessage = "" }: TutorAssistantFloatingProps) {
   const { token, user } = useAuth();
   const location = useLocation();
   const [open, setOpen] = useState(false);
@@ -67,12 +72,29 @@ export function TutorAssistantFloating({ courses, activeCourseId }: TutorAssista
   );
   const courseName = courses.find((course) => course.id === context.courseId)?.name ?? "";
 
+  useEffect(() => {
+    if (openSignal > 0) {
+      setOpen(true);
+    }
+  }, [openSignal]);
+
+  useEffect(() => {
+    if (interventionMessage && open && context.courseId && !loading) {
+      setInput(interventionMessage);
+    }
+  }, [interventionMessage, open, context.courseId, loading]);
+
   if (!user) {
     return null;
   }
 
   async function handleSend() {
     const content = input.trim() || (attachments.length ? "请结合我上传的图片进行讲解。" : "");
+    await sendMessage(content);
+  }
+
+  /** 追问选项点击等场景：直接发送指定文本（不经过输入框） */
+  async function sendMessage(content: string) {
     if (!context.courseId || !content) {
       return;
     }
@@ -87,16 +109,23 @@ export function TutorAssistantFloating({ courses, activeCourseId }: TutorAssista
     setMediaNotice("");
     try {
       const outgoingAttachments = attachments.map(({ preview_url: _previewUrl, ...attachment }) => attachment);
+      const attention = getSharedAttention();
       const result = await sendTutorMessage(token, {
         course_id: context.courseId,
         message: content,
         node_id: context.nodeId,
         page_context: context.pageContext,
         attachments: outgoingAttachments,
-        history: messages.slice(-6).map((message) => ({ role: message.role, content: message.content }))
+        history: messages.slice(-6).map((message) => ({ role: message.role, content: message.content })),
+        attention_state: attention?.state ?? ""
       });
       setResponse(result);
-      setMessages((items) => [...items, { id: `assistant-${Date.now()}`, role: "assistant", content: result.answer }]);
+      setMessages((items) => [...items, {
+        id: `assistant-${Date.now()}`,
+        role: "assistant",
+        content: result.answer,
+        followups: result.suggested_followups ?? []
+      }]);
       setInput("");
       setAttachments((items) => {
         items.forEach((item) => {
@@ -224,6 +253,7 @@ export function TutorAssistantFloating({ courses, activeCourseId }: TutorAssista
           onImageInput={handleImageInput}
           onVoiceInput={handleVoiceInput}
           onRemoveAttachment={handleRemoveAttachment}
+          onFollowupClick={(text) => { void sendMessage(text); }}
         />
       ) : null}
       <input

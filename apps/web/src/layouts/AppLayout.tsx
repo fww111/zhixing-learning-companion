@@ -2,6 +2,7 @@ import { Activity, BookOpen, CheckCircle2, GitBranch, LogOut, Network, Route, Us
 import { useEffect, useState, type ReactNode } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { listCourses, type Course } from "../api/client";
+import { AttentionFloating } from "../components/AttentionFloating";
 import { TutorAssistantFloating } from "../components/TutorAssistantFloating";
 import { useAuth } from "../state/auth";
 import { isProfileScopedToCourse } from "../state/profileScopeModel";
@@ -25,6 +26,9 @@ export function AppLayout() {
   const [fallbackCourseId, setFallbackCourseId] = useState<number | undefined>(() => readCurrentCourseId());
   const activeCourseId = courseId ? Number(courseId) : fallbackCourseId;
   const activeCourse = courses.find((course) => course.id === activeCourseId);
+  const knowledgeNodeId = decodeURIComponent(location.pathname.match(/\/courses\/\d+\/knowledge\/([^/?#]+)/)?.[1] || "");
+  const [tutorOpenSignal, setTutorOpenSignal] = useState(0);
+  const [interventionMessage, setInterventionMessage] = useState("");
   const activeCourseProfile = isProfileScopedToCourse(profile, profileCourseId, activeCourseId) ? profile : undefined;
   const { assessmentTarget, courseKnowledgeBaseTarget, graphTarget, pathTarget, profileTarget } = currentCourseNavigationTargets(activeCourseId);
   const courseScopedDisabled = isCourseNavigationDisabled(activeCourseId);
@@ -194,7 +198,23 @@ export function AppLayout() {
           <Outlet />
         </section>
       </section>
-      <TutorAssistantFloating courses={courses} activeCourseId={activeCourseId} />
+      {user ? (
+        <AttentionFloating
+          activeCourseId={activeCourseId}
+          nodeId={knowledgeNodeId}
+          onIntervene={({ nodeId, state }) => {
+            setInterventionMessage(
+              `我正在学习知识点「${nodeId}」，学习状态感知显示我处于「${state}」，请结合课程知识库换一种更直观的讲法：先讲直觉类比，再给一个可运行的 C++ 例子。`
+            );
+            setTutorOpenSignal((n) => n + 1);
+          }}
+          token={token}
+          topic={knowledgeNodeId}
+        />
+      ) : null}
+      <TutorAssistantFloating courses={courses} activeCourseId={activeCourseId} openSignal={tutorOpenSignal}
+          interventionMessage={interventionMessage}
+        />
     </main>
   );
 }

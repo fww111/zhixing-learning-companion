@@ -27,6 +27,7 @@ interface TutorAssistantPanelProps {
   onImageInput: () => void;
   onVoiceInput: () => void;
   onRemoveAttachment: (id: string) => void;
+  onFollowupClick: (text: string) => void;
 }
 
 export function TutorAssistantPanel({
@@ -45,7 +46,8 @@ export function TutorAssistantPanel({
   onClose,
   onImageInput,
   onVoiceInput,
-  onRemoveAttachment
+  onRemoveAttachment,
+  onFollowupClick
 }: TutorAssistantPanelProps) {
   const disabledReason = tutorSendDisabledReason(context.courseId, input, attachments.length);
   const stages = agentStageState(response?.agent_events ?? []);
@@ -83,11 +85,24 @@ export function TutorAssistantPanel({
             <span>我会结合本地知识库、知识图谱和当前页面上下文回答。</span>
           </div>
         ) : (
-          messages.map((message) => (
-            <article className={`tutor-message ${message.role}`} key={message.id}>
-              <p>{message.content}</p>
-            </article>
-          ))
+          messages.map((message, index) => {
+            const isLastAssistant = message.role === "assistant" && index === messages.length - 1;
+            const followups = isLastAssistant ? (message.followups ?? []) : [];
+            return (
+              <article className={`tutor-message ${message.role}`} key={message.id}>
+                <p>{message.content}</p>
+                {followups.length && !loading ? (
+                  <div className="tutor-followups" aria-label="追问选项">
+                    {followups.map((item) => (
+                      <button key={item} onClick={() => onFollowupClick(item)} type="button">
+                        {item}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </article>
+            );
+          })
         )}
 
         {response && shouldDisplayTutorRagEvidence() ? (

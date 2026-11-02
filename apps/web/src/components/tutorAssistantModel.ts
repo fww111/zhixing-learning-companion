@@ -16,6 +16,8 @@ export interface TutorWorkbenchMessage {
   id: string;
   role: "user" | "assistant" | "system";
   content: string;
+  /** issue #16：assistant 消息附带的追问选项（最后一条 assistant 消息可点） */
+  followups?: string[];
 }
 
 export interface TutorAttachmentDraft {

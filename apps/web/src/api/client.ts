@@ -329,6 +329,8 @@ export interface TutorChatPayload {
   page_context?: string;
   attachments?: TutorAttachment[];
   history?: Array<{ role: string; content: string }>;
+  /** 学习状态感知（issue #15）：focused/confused/distracted/tired/no_face */
+  attention_state?: string;
 }
 
 export interface TutorAgentEvent {
@@ -374,6 +376,7 @@ export interface TutorChatResponse {
   decision_report: Record<string, unknown>;
   multimodal_cards: TutorMultimodalCard[];
   suggested_actions: TutorSuggestedAction[];
+  suggested_followups?: string[];
 }
 
 export interface AuthUser {

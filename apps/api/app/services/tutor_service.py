@@ -139,6 +139,7 @@ class TutorService:
         multimodal_cards = self._multimodal_cards(topic, answer, evidence_chunks, graph_constraints, request)
         suggested_actions = self._suggested_actions(request)
         agent_events = self._agent_events(analysis_plan, evidence_chunks, verification_report, decision_report)
+        suggested_followups = await self._suggested_followups(request, topic, answer)
         self._record_tutor_event(user_id, request, verification_report)
 
         return TutorChatResponse(
@@ -152,6 +153,7 @@ class TutorService:
             decision_report=decision_report,
             multimodal_cards=multimodal_cards,
             suggested_actions=suggested_actions,
+            suggested_followups=suggested_followups,
         )
 
     def _validate_course_access(self, user_id: int, course_id: int) -> None:
@@ -374,17 +376,35 @@ class TutorService:
         graph_text = self._format_graph_constraints(graph_constraints)
         attachment_text = self._format_attachments(request)
         history_text = self._format_history(request.history)
+        attention_text = self._format_attention_state(request.attention_state)
         return (
             f"课程ID：{request.course_id}\n"
             f"页面上下文：{request.page_context or 'unknown'}\n"
             f"当前知识点：{topic}\n"
             f"学生问题：{request.message.strip()}\n\n"
+            f"学习状态感知：\n{attention_text}\n\n"
             f"图片/语音等附件上下文：\n{attachment_text}\n\n"
             f"最近对话：\n{history_text}\n\n"
             f"知识图谱约束：\n{graph_text}\n\n"
             f"MySQL 原文证据块：\n{evidence_text}\n\n"
             "请输出面向学生的中文回答，结构建议：直接回答、为什么、例子或操作建议、引用依据。"
+            "若学习状态为 confused（困惑），先用一个直觉类比讲清核心，再进入推导，并主动提出'换个方式讲'；"
+            "若为 distracted，回答开头温和地把注意力拉回当前知识点；若为 tired，建议先做一道短练习再继续。"
         )
+
+    @staticmethod
+    def _format_attention_state(attention_state: str) -> str:
+        state = (attention_state or "").strip().lower()
+        labels = {
+            "focused": "专注中（正常讲解即可）",
+            "confused": "困惑中（学生可能卡住了：先直觉类比，再推导，主动提出换一种讲法）",
+            "distracted": "走神中（温和地把注意力拉回当前知识点，不要说教）",
+            "tired": "疲劳（建议先做一道短练习或稍作休息再继续）",
+            "no_face": "未检测到学生（正常讲解）",
+        }
+        if not state:
+            return "未开启学习状态感知（按正常方式讲解）。"
+        return labels.get(state, f"状态：{state}")
 
     def _format_evidence_chunk(self, chunk: TutorEvidenceChunk) -> str:
         content = " ".join(chunk.content.split())
@@ -567,6 +587,60 @@ class TutorService:
                 )
             )
         return actions
+
+    async def _suggested_followups(
+        self,
+        request: TutorChatRequest,
+        topic: str,
+        answer: str,
+    ) -> list[str]:
+        """issue #16：为辅导回答生成 2-3 条可点击追问，让对话向教学目标收敛。
+
+        LLM 生成失败或结果不足两条时，回退到场景化模板（代码实验/错题场景优先
+        "帮我看看代码"类选项），保证每次回答都有可点的追问。
+        """
+        prompt = (
+            "基于学生问题与助教回答，生成 3 条学生可能点击的追问，分别覆盖三种层次：\n"
+            "①澄清型：确认一个具体概念点；②深入型：问原理或复杂度；③实操型：要一个可运行的 C++ 例子或变式练习。\n"
+            "每条不超过 22 个字，必须与知识点和问题上下文强相关，禁止'再讲讲''继续'式空泛选项。\n\n"
+            f"知识点：{topic}\n"
+            f"学生问题：{request.message.strip()[:200]}\n"
+            f"回答摘要：{answer[:400]}"
+        )
+        if self.llm is not None:
+            try:
+                data = await asyncio.wait_for(
+                    self.llm.complete_json(
+                        "你是辅导追问选项生成器，只输出 JSON。",
+                        prompt + '\n\n输出格式：{"followups": ["选项1", "选项2", "选项3"]}',
+                    ),
+                    timeout=15,
+                )
+                items = [str(item).strip() for item in (data.get("followups") or []) if str(item).strip()]
+                items = items[:3]
+                if len(items) >= 2:
+                    return items
+            except Exception:
+                pass
+        return self._default_followups(request, topic)
+
+    @staticmethod
+    def _default_followups(request: TutorChatRequest, topic: str) -> list[str]:
+        message = (request.message or "").lower()
+        code_scene = any(
+            key in message for key in ("代码", "编译", "报错", "运行", "输出", "调试", "error")
+        )
+        if code_scene:
+            return [
+                "我的代码输出不对，帮我看看哪里错了",
+                f"给一个{topic}的完整可运行 C++ 示例",
+                f"{topic}最容易犯的错误是什么？",
+            ]
+        return [
+            f"能讲讲{topic}背后的原理吗？",
+            f"给一个{topic}的可运行 C++ 例子",
+            f"{topic}和易错点：出一道变式题考考我",
+        ]
 
     def _agent_events(
         self,
