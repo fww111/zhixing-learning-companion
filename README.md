@@ -1,206 +1,143 @@
-# 个性化学习多智能体系统
+# 知行学习伙伴 · Zhixing Learning Companion
 
-这是一个面向“基于大模型的个性化资源生成与学习多智能体系统开发”赛题的可运行原型。当前项目已经升级为多课程、课程级隔离的个性化学习平台，支持 JWT 登录注册、课程专属学生画像、课程本地知识库、Milvus 向量检索、Neo4j 知识图谱、Agentic RAG、多智能体资源生成、OpenMAIC 标准课堂、智能辅导、错题集和动态学习路径。
+> 面向高等教育的个性化学习多智能体系统 —— 华为 ICT 大赛赛题二（基于华为云 AgentArts 智能体开发平台的 Agent 设计和应用）参赛作品。
+>
+> 以《C++算法学习》为演示课程，通过多智能体协作把"教材语料 + 知识图谱 + 学生画像"变成会看、会说、会因材施教的 AI 学习伙伴。
 
-当前技术总览见 [docs/current-technical-overview.md](docs/current-technical-overview.md)。
+## 作品简介
 
-## 华为 ICT 大赛赛题二（AgentArts）迁移
+学生面对海量课程资料难以筛选、集体授课难以因材施教，而直接使用通用大模型答疑又存在幻觉风险。**知行学习伙伴**用多智能体协作解决这三个痛点：
 
-本项目正作为底座迁移到华为云 AgentArts 平台参赛，相关设计、蓝图与 MCP 服务：
+1. **对话式学习画像**：14 维学生画像（专业/目标/基础/薄弱点/时间约束等）通过自然语言访谈构建，随学随新；
+2. **证据约束的资源生成**：讲解文档、思维导图、视频脚本、代码实验、练习题、拓展阅读 6 类资源由独立 Agent 并行生成，全部**可回溯到教材原文**，经事实校验、教学适配、双模型辩论交叉验证后才交付；
+3. **动态学习路径**：知识点掌握度驱动，未达标自动插入薄弱点专项补救任务；
+4. **智能辅导**：结合课程知识库与知识图谱约束的多轮答疑，支持追问选项与语音/图片输入；
+5. **学习状态感知**（创新点）：MediaPipe 在浏览器本地分析摄像头画面（专注/困惑/走神/疲劳），AI 感知学生卡住时**主动介入换一种讲法**——画面永不上传，只上报状态指标；
+6. **学习评估与错题闭环**：多维评估写入掌握度与画像，错题按章节归档、重做回写。
 
-- [docs/agentarts/01-场景定义与Agent架构.md](docs/agentarts/01-场景定义与Agent架构.md) — 场景识别、多 Agent 架构、模型与资产选择
-- [docs/agentarts/02-AgentArts工作流搭建蓝图.md](docs/agentarts/02-AgentArts工作流搭建蓝图.md) — 平台侧节点级搭建说明
-- [docs/agentarts/03-MCP服务接口契约.md](docs/agentarts/03-MCP服务接口契约.md) — 三个自定义 MCP Server 的工具契约
-- [apps/mcp/](apps/mcp/README.md) — MCP Server 实现（uv 项目，`uv run pytest` 验证）
-- [docs/agentarts/05-技术借鉴与增强.md](docs/agentarts/05-技术借鉴与增强.md) — 源自"伯乐"项目的分块预设体系与知识库检索自动评估闭环
+演示课程《C++算法学习》含 8 章 33 节自建教材语料（每节含可编译 C++17 示例，33/33 通过 g++ 校验）与知识图谱种子。
 
-## 核心能力
+## 系统架构
 
-- 用户注册、登录、JWT 鉴权和当前用户查询。
-- 固定支持 `C语言程序设计` 与 `Python程序设计` 两门展示课程。
-- 用户选择课程后，构建该课程专属学生画像；不同课程的画像互相隔离。
-- 对话式多轮访谈构建画像，首问固定，后续由 DeepSeek V4 Pro 基于画像缺口动态追问，画像完整后自动确认并持久化到 MySQL。
-- 支持课程材料 PDF/PPT/PPTX 多文件上传，MinerU 精准解析优先，本地解析/OCR 仅作为显式兜底。
-- 课程材料切片写入 MySQL，文本向量化使用本地 BGE-M3，向量召回层使用 Milvus。
-- 使用 DeepSeek V4 Pro 从本地知识库抽取课程知识结构，写入 Neo4j 并在前端展示知识图谱。
-- 资源生成采用 Agentic RAG + 知识图谱约束：Milvus 召回候选，最终证据回表 MySQL 原文 chunk。
-- 文档、思维导图、视频脚本、代码实验、练习题、拓展阅读分别由独立 Agent 生成，并经过事实校验、教学适配、辩论交叉验证和决策。
-- 知识点学习页以 OpenMAIC 标准课堂为主学习表面，课堂语音默认使用 OpenMAIC 侧配置的阿里云百炼 Qwen TTS。
-- 题库 Agent 会围绕当前知识点生成专业练习题，选择题保存 `correct_answer_index`，编程题只给任务要求和期望输出，由学生在浏览器编辑器中完成。
-- 学习评估会综合课堂完成、文档/思维导图、题库、编程运行、耗时和重试等维度，更新知识点掌握度、知识图谱节点颜色、学生画像和后续学习路径；未达标时插入薄弱点专项补救任务。
-- 学习评估页提供错题集入口，错题按知识图谱章节/小节归档；选择题和编程题重做正确后，会重新写入评估结果并触发画像、掌握度和路径更新。
-- 登录后的全局页面右下角提供智能辅导悬浮窗，支持文字、图片和浏览器语音输入；回答通过 Agentic RAG 增强生成，图片理解默认使用 Qwen3.7-Plus 配置。
-- Mock LLM 模式保留为无 API Key 演示兜底。
+```text
+学生（React 前端 / AgentArts 网页发布）
+        │
+        ▼
+华为云 AgentArts 多智能体应用（平台侧编排：意图路由 → 画像访谈 / 资源生成 / 辅导 / 路径评估）
+        │  平台知识库（教材语料语义检索）   │  MaaS：DeepSeek-V4 系 + GLM-5（校验/辩论双模型）
+        │  MCP 调用                        │  效果评估（正确性/幻觉评估器）
+        ▼
+本仓库业务层（MCP Server 三件套，streamableHttp）
+ ├─ profile-server     画像持久化 / 访谈记录 / 画像随学随新事件
+ ├─ graph-server       Neo4j 知识图谱约束导出 / MySQL 原文证据回表（防幻觉的最终证据源）
+ └─ assessment-server  综合评估 / 掌握度 / 学习路径规划 / 错题归档
+        │
+        ▼
+FastAPI 业务 API（JWT 鉴权、材料解析、学习事件） + MySQL + Neo4j + OpenMAIC 标准课堂
+```
+
+- **平台侧**（AgentArts 工作流/知识库/评估/发布）承载智能体编排，搭建蓝图见 [docs/agentarts/02](docs/agentarts/02-AgentArts工作流搭建蓝图.md)；
+- **本仓库**承载平台不具备的业务深度：知识图谱约束、掌握度驱动重规划、课程级多用户数据隔离；
+- 两侧通过 **MCP（streamableHttp）** 连接，工具契约见 [docs/agentarts/03](docs/agentarts/03-MCP服务接口契约.md)。
+
+## 核心技术
+
+| 层 | 选型 |
+| --- | --- |
+| 前端 | React 19 + Vite + TypeScript + React Router |
+| 智能体编排 | 华为云 AgentArts 低代码工作流（并行聚合 + 反思精炼循环 + 双模型辩论） |
+| 业务服务 | FastAPI + SQLAlchemy（JWT 鉴权） |
+| MCP | 官方 Python SDK，三个业务 Server（apps/mcp，uv 管理） |
+| 数据 | MySQL（业务/原文 chunk）+ Neo4j（课程知识图谱，user_id + course_id 隔离） |
+| 检索 | AgentArts 平台知识库语义检索 + 本地分块预设（general/qa/book）+ 检索质量评估闭环（recall/f1@k、坏例分析） |
+| 课堂 | OpenMAIC 多智能体互动课堂（3D 可视化/仿真/在线编程） |
+| 学习状态感知 | MediaPipe FaceLandmarker 纯浏览器推理（任何视频帧不出本机） |
+| 大模型 | 华为云 MaaS DeepSeek-V4 系（主推理）+ GLM-5（校验/辩论）；本地开发可配任意 OpenAI 兼容端点 |
+
+## 快速开始
+
+### 0. 环境要求
+
+- Python ≥ 3.11 与 [uv](https://docs.astral.sh/uv/)
+- Node.js ≥ 18
+- （可选）本地 MySQL 与 Neo4j：未配置时后端可用 SQLite 跑通画像与事件链路
+
+复制 `.env.example` 为仓库根目录 `.env`，按需填写 `DATABASE_URL`、`NEO4J_*`、`LLM_API_KEY` 等；密钥只放本地 `.env`，不提交仓库。
+
+### 1. 后端（FastAPI，端口 8000）
+
+```bash
+cd apps/api
+uv venv && uv pip install -r requirements.txt
+uvicorn app.main:app --port 8000
+```
+
+### 2. 前端（Vite dev，端口 5173）
+
+```bash
+cd apps/web
+npm install
+npm run dev        # predev 会自动把 MediaPipe wasm 从 node_modules 拷到 public
+```
+
+访问 http://localhost:5173 。若本机 8000 端口被占用，可用 `VITE_API_TARGET=http://127.0.0.1:8010 npm run dev` 配合 `uvicorn --port 8010`。
+
+### 3. 灌入《C++算法学习》演示课程（可选）
+
+```bash
+cd apps/mcp
+uv sync
+uv run python scripts/seed_cpp_course.py --dry-run   # 校验语料与图谱对齐
+uv run python scripts/seed_cpp_course.py             # 写入 MySQL + Neo4j（需 .env 提供 DATABASE_URL/NEO4J_*）
+```
+
+### 4. 启动 MCP Server 三件套（供 AgentArts 工作流调用）
+
+```bash
+cd apps/mcp
+uv run python -m mcp_servers.profile_server      # http://0.0.0.0:8100/mcp
+uv run python -m mcp_servers.graph_server        # http://0.0.0.0:8101/mcp
+uv run python -m mcp_servers.assessment_server   # http://0.0.0.0:8102/mcp
+```
+
+Docker 一键部署见 [apps/mcp/README.md](apps/mcp/README.md)。
+
+### 5. 体验学习状态感知
+
+登录后进入任一知识点学习页，开启左下角「学习状态感知」并允许摄像头（或任意页面使用全局悬浮窗）。困惑持续 15 秒会触发**主动介入横幅**，一键让辅导 AI 结合课程证据换一种讲法。整个过程只有 JSON 状态指标出本机，可用浏览器 DevTools 网络面板核验。
+
+## 测试
+
+```bash
+cd apps/api && pytest tests -q                       # 后端（含分块预设、KB 检索评估闭环）
+cd apps/web && npm run test:models && npm run build  # 前端模型单测 + tsc 构建
+cd apps/mcp && uv run pytest -q                      # MCP Server 冒烟
+```
 
 ## 目录结构
 
 ```text
-apps/api/      FastAPI 后端
-apps/web/      React + Vite + TypeScript 前端
-data/seed/     演示课程和资源种子数据
-docs/          技术方案、部署、测试、设计稿和需求文档
-OpenMAIC-main/ OpenMAIC 标准课堂前端与生成服务
+apps/api        FastAPI 后端（画像/材料解析/知识图谱/路径/评估/辅导/KB 检索评估）
+apps/web        React 前端（学习工作台、全局辅导窗、学习状态感知悬浮、Agent 协作轨迹）
+apps/mcp        MCP Server 三件套 + 课程种子/语料校验/提示词实测脚本
+data/seed       《C++算法学习》教材语料与知识图谱种子
+docs/agentarts  参赛设计方案：场景与架构 / 平台搭建蓝图 / MCP 契约 / 提示词资产包 / 技术借鉴
+docs            技术方案、部署、测试、PRD、设计稿
+OpenMAIC-main   OpenMAIC 标准课堂（开源，见下方致谢）
 ```
 
-## 本机运行
+## AgentArts 参赛设计文档
 
-先确认本地 MySQL 已创建数据库：
+| 文档 | 内容 |
+| --- | --- |
+| [01 场景定义与 Agent 架构](docs/agentarts/01-场景定义与Agent架构.md) | 场景识别、多 Agent 分工、模型与资产选择、创新点 |
+| [02 工作流搭建蓝图](docs/agentarts/02-AgentArts工作流搭建蓝图.md) | 平台侧节点级搭建说明（知识库/画像/资源生成/发布/评估） |
+| [03 MCP 服务接口契约](docs/agentarts/03-MCP服务接口契约.md) | 17 个 MCP 工具的参数、返回、错误约定、Schema |
+| [04 提示词资产包](docs/agentarts/04-提示词资产包.md) | 工作流各节点可直接粘贴的提示词与模型档位路由实测结论 |
+| [05 技术借鉴与增强](docs/agentarts/05-技术借鉴与增强.md) | 分块预设体系与检索评估闭环的设计来源 |
 
-```sql
-CREATE DATABASE IF NOT EXISTS softbei DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
+## 开源与 AI 辅助说明
 
-后端：
-
-```powershell
-conda activate a3
-cd D:\softbei\a3\apps\api
-pip install -r requirements.txt
-python -m uvicorn app.main:app --reload --port 8000
-```
-
-前端：
-
-```powershell
-cd D:\softbei\a3\apps\web
-npm install
-npm run dev
-```
-
-访问 `http://127.0.0.1:5173`。
-
-OpenMAIC 默认运行在：
-
-```text
-http://127.0.0.1:3000
-```
-
-如果需要完整标准课堂能力，请先启动 OpenMAIC，并在 OpenMAIC 自身 `.env.local` 或设置页中配置模型 provider 和阿里云百炼 Qwen TTS。
-
-## 当前产品流程
-
-```text
-/auth 登录注册
- -> /courses 选择 C语言程序设计 或 Python程序设计
- -> /courses/:courseId/profile/interview 构建该课程专属画像
- -> /courses/:courseId/knowledge-base 上传材料或确认内置知识库
- -> /courses/:courseId/graph 构建并查看知识图谱
- -> /courses/:courseId/learning-path 生成动态学习路径
- -> /courses/:courseId/knowledge/:nodeId 进入知识点学习页
- -> OpenMAIC 标准课堂、文档、思维导图、代码练习、随堂测试
- -> 学习评估
- -> /courses/:courseId/assessment/wrong-questions 错题重做与评分回写
- -> 更新画像、掌握度、图谱颜色和学习路径
-```
-
-多课程隔离是核心约束。课程画像、材料、MySQL chunk、Milvus collection、Neo4j 子图、学习路径、课堂缓存、评估记录和掌握度都必须绑定当前 `user_id + course_id`。
-
-## 知识库构建链路
-
-```text
-PDF/PPT/PPTX 上传
- -> 保存文件和 CourseMaterial，返回 queued
- -> MaterialTaskQueue 后台解析
- -> MinerU 精准解析，或显式本地解析/OCR 兜底
- -> 章节语义分块
- -> KnowledgeChunk 写入 MySQL
- -> BGE-M3 本地向量化
- -> Milvus 写入课程级 collection
- -> DeepSeek V4 Pro 抽取知识点和关系
- -> Neo4j 写入当前用户当前课程子图
-```
-
-材料状态包括 `queued`、`processing`、`mineru_submitted`、`mineru_polling`、`ocr_running`、`chunking`、`indexing`、`parsed`、`index_failed` 和 `failed`。`index_failed` 表示 MySQL chunk 已保留，但向量写入失败；修复 Milvus 后可点击“重建向量索引”或调用 `POST /api/courses/{course_id}/vector-index/rebuild`。
-
-## 关键接口
-
-认证：
-
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `GET /api/auth/me`
-
-课程级画像：
-
-- `POST /api/profile-interviews`，请求体携带 `{ "course_id": <id> }`
-- `POST /api/profile-interviews/{id}/messages`
-- `POST /api/profile-interviews/{id}/confirm`
-- `GET /api/profiles/me?course_id=<id>`
-
-课程和知识库：
-
-- `POST /api/courses/default-python`
-- `POST /api/courses/default-c`
-- `POST /api/courses/{course_id}/materials`
-- `DELETE /api/courses/{course_id}/materials/{material_id}`
-- `POST /api/courses/{course_id}/vector-index/rebuild`
-- `POST /api/courses/{course_id}/graph/build`
-- `POST /api/courses/{course_id}/profile-events`
-- `GET /api/courses/{course_id}/profile-events`
-
-学习与资源：
-
-- `POST /api/courses/{course_id}/learning-paths/plan`
-- `POST /api/resources/generate`
-- `GET /api/resources/openmaic-jobs/{job_id}`
-- `PATCH /api/resources/lessons/state`
-- `POST /api/assessments/submit`
-- `POST /api/tutor/chat`
-- `POST /tts/upload`，仅用于可选 VoxCPM2 实验兜底
-
-## 环境变量
-
-复制 `.env.example` 到本地 `.env`，真实密钥只写 `.env`，不要提交仓库。
-
-```text
-MOCK_LLM=false
-LLM_API_KEY=
-LLM_BASE_URL=https://api.deepseek.com/v1
-LLM_MODEL=deepseek-v4-pro
-TUTOR_VISION_API_KEY=
-TUTOR_VISION_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
-TUTOR_VISION_MODEL=qwen3.7-plus
-DATABASE_URL=mysql+pymysql://root:123456@127.0.0.1:3306/softbei?charset=utf8mb4
-JWT_SECRET_KEY=replace-with-a-long-random-secret
-UPLOAD_DIR=data/uploads
-MAX_UPLOAD_SIZE_MB=100
-MILVUS_URI=http://127.0.0.1:19530
-OPENMAIC_BASE_URL=http://127.0.0.1:3000
-TTS_QWEN_API_KEY=
-TTS_QWEN_BASE_URL=
-VOXCPM_MODEL_ID=D:/softbei/a3/data/models/voxcpm/VoxCPM2
-VOXCPM_CACHE_DIR=D:/softbei/a3/data/models/voxcpm
-VOXCPM_LOCAL_FILES_ONLY=true
-EMBEDDING_PROVIDER=local_bge
-EMBEDDING_MODEL=D:/softbei/a3/data/models/embeddings/BAAI/bge-m3
-EMBEDDING_DEVICE=cpu
-EMBEDDING_CACHE_DIR=D:/softbei/a3/data/models/embeddings
-MINERU_ENABLED=false
-MINERU_API_TOKEN=
-NEO4J_URI=bolt://127.0.0.1:7687
-NEO4J_USER=neo4j
-NEO4J_PASSWORD=
-```
-
-BGE-M3 缓存变量 `HF_HOME` 和 `SENTENCE_TRANSFORMERS_HOME` 已在 `apps/api/app/services/vector_service.py` 中于导入 `sentence_transformers` 前设置。正常通过后端触发向量化时不需要手动配置。
-
-## 测试
-
-```powershell
-cd D:\softbei\a3
-conda activate a3
-python -m pytest apps/api/tests -q
-
-cd D:\softbei\a3\apps\web
-npm run build
-```
-
-端到端验收应分别测试 `C语言程序设计` 与 `Python程序设计`，确认两门课的画像、知识库、图谱、路径、课堂状态和评估记录互相隔离。
-
-## 设计稿
-
-商业级学习网站视觉方案已生成为 HTML：
-
-- [docs/design/commercial-learning-site-design-options.html](docs/design/commercial-learning-site-design-options.html)
-
-该文件只作为设计稿，不包含功能代码修改，也不需要转为 PDF。
+- [OpenMAIC](https://github.com/THU-MAIC/OpenMAIC)（AGPL-3.0）作为标准课堂组件集成，来源与使用方式如目录所示；
+- 分块预设体系与知识库检索自动评估借鉴自开源项目"伯乐 Bole"（AI-Interview），移植与裁剪说明见 [docs/agentarts/05](docs/agentarts/05-技术借鉴与增强.md)；
+- 本项目开发过程使用了 AI Coding 工具辅助，范围与协作方式见 [docs/ai-coding-tools.md](docs/ai-coding-tools.md)。
