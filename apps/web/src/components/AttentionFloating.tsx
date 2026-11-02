@@ -5,6 +5,13 @@ import { useAttentionAnalysis, type AttentionSample } from "../composables/useAt
 import { setSharedAttention } from "../state/attentionShared";
 import { createLearningProfileEvent } from "../api/client";
 
+/** 临时调试：暴露内部信号供阈值校准（验证完移除） */
+declare global {
+  interface Window {
+    __attentionDebug?: { browFurrow: number; squint: number; gazeX: number; gazeY: number; yawDeg: number; blinkBoth: number };
+  }
+}
+
 const STATE_LABELS: Record<AttentionStateKey, string> = {
   focused: "专注中",
   confused: "似乎有点困惑",
@@ -22,7 +29,7 @@ const STATE_CLASS: Record<AttentionStateKey, string> = {
 };
 
 /** 困惑持续多久触发主动介入（issue #15）；同一知识点最多介入次数 */
-const CONFUSED_INTERVENTION_MS = 15_000;
+const CONFUSED_INTERVENTION_MS = 10_000;
 const MAX_INTERVENTIONS_PER_NODE = 2;
 const SAMPLE_INTERVAL_MS = 10_000;
 
@@ -71,6 +78,19 @@ export function AttentionFloating({ token, activeCourseId, nodeId, topic, onInte
   attentionStopRef.current = attention.stop;
 
   const [intervention, setIntervention] = useState(false);
+  // 临时调试条：轮询读取最新帧信号
+  const [debug, setDebug] = useState<{ browFurrow: number; squint: number; gazeX: number } | null>(null);
+  useEffect(() => {
+    if (!enabled) {
+      setDebug(null);
+      return;
+    }
+    const timer = window.setInterval(() => {
+      const d = (window as unknown as { __attentionDebug?: { browFurrow: number; squint: number; gazeX: number } }).__attentionDebug;
+      if (d) setDebug({ browFurrow: d.browFurrow, squint: d.squint, gazeX: d.gazeX });
+    }, 500);
+    return () => window.clearInterval(timer);
+  }, [enabled]);
   const confusedSinceRef = useRef<number | null>(null);
   const interventionsByNodeRef = useRef<Map<string, number>>(new Map());
   const interveneContextRef = useRef<{ nodeId: string; topic: string; state: AttentionStateKey } | null>(null);
@@ -105,7 +125,10 @@ export function AttentionFloating({ token, activeCourseId, nodeId, topic, onInte
         setIntervention(true);
       }
     } else {
-      confusedSinceRef.current = null;
+      // 宽限设计：真实表情有抖动（短暂回专注/丢脸），2.5s 内恢复困惑不清零累计
+      if (confusedSinceRef.current !== null && Date.now() - confusedSinceRef.current > 2500) {
+        confusedSinceRef.current = null;
+      }
       setIntervention(false);
     }
   }, [attention.status, enabled, activeCourseId, nodeId, topic]);
@@ -162,9 +185,10 @@ export function AttentionFloating({ token, activeCourseId, nodeId, topic, onInte
         )}
       </div>
 
-      {enabled ? (
-        <div className="attention-body">
-          <video className="attention-preview" muted playsInline ref={videoRef} />
+      {/* video 元素始终是同一个（仅 CSS 显隐）：React 重建元素会导致摄像头流丢失 */}
+      <div className={enabled ? "attention-body" : "attention-body hidden-body"}>
+        <video className={`attention-preview${enabled ? "" : " hidden-preview"}`} muted playsInline ref={videoRef} />
+        {enabled ? (
           <div className="attention-meta">
             <span className={`attention-state ${STATE_CLASS[attention.status.state]}`}>
               {STATE_LABELS[attention.status.state]}
@@ -175,23 +199,24 @@ export function AttentionFloating({ token, activeCourseId, nodeId, topic, onInte
             {attention.status.blinkRatePerMinute > 0 ? (
               <small>眨眼 {attention.status.blinkRatePerMinute}/min</small>
             ) : null}
+            {debug ? (
+              <small className="attention-debug">
+                皱眉{debug.browFurrow.toFixed(2)} 眯眼{debug.squint.toFixed(2)} 视线X{debug.gazeX.toFixed(2)}
+              </small>
+            ) : null}
             {busy ? <small>模型加载中…</small> : null}
             {attention.status.error ? <small className="attention-error">{attention.status.error}</small> : null}
             <small className="attention-privacy">
               <EyeOff size={11} /> 仅本机分析，画面不上传
             </small>
           </div>
-        </div>
-      ) : (
-        <>
-          {/* video 始终渲染（隐藏），保证点开启时 ref 可用 */}
-          <video className="attention-preview hidden-preview" muted playsInline ref={videoRef} />
+        ) : (
           <p className="attention-hint">
             开启后在本机分析摄像头画面（专注/困惑/走神/疲劳），辅助 AI 在你卡住时主动换一种讲法。
             画面不会离开你的电脑。
           </p>
-        </>
-      )}
+        )}
+      </div>
 
       {intervention ? (
         <button className="attention-intervention" onClick={handleIntervene} type="button">

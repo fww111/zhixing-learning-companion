@@ -57,9 +57,12 @@ export interface AttentionThresholds {
 }
 
 export const DEFAULT_ATTENTION_THRESHOLDS: AttentionThresholds = {
-  confusedBrowFurrow: 0.3,
-  confusedSquint: 0.18,
-  confusedConfirmMs: 3000,
+  // 依据真实人脸采样校准（2026-11 两轮）：部分用户 browDown blendshape 皱眉峰值仅 ~0.17、
+  // 日常皱眉 ~0.14，主判据 0.115（放松态 P50≈0.10 之上）；眯眼 squint 信号最强（可达 0.7），
+  // 组合路径覆盖"轻度皱眉+眯眼"的真实困惑共现表情
+  confusedBrowFurrow: 0.115,
+  confusedSquint: 0.3,
+  confusedConfirmMs: 1500,
   distractedGazeX: 0.45,
   distractedGazeY: 0.5,
   distractedYawDeg: 22,
@@ -247,7 +250,7 @@ export class AttentionStateMachine {
     const t = this.thresholds;
     return (
       signal.browFurrow >= t.confusedBrowFurrow ||
-      (signal.browFurrow >= t.confusedBrowFurrow * 0.8 && signal.squint >= t.confusedSquint)
+      (signal.browFurrow >= t.confusedBrowFurrow * 0.75 && signal.squint >= t.confusedSquint)
     );
   }
 
