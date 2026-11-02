@@ -32,6 +32,9 @@ DEFAULT_VOXCPM_MODEL_ID = "openbmb/VoxCPM2"
 DEFAULT_VOXCPM_CACHE_DIR = "D:/softbei/a3/data/models/voxcpm"
 DEFAULT_TUTOR_VISION_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
 DEFAULT_TUTOR_VISION_MODEL = "qwen3.7-plus"
+# AgentArts 平台发布的应用 API 地址，形态为 https://{endpoint}/v1/{app_id}/chat/completions
+DEFAULT_AGENTARTS_BASE_URL = ""
+DEFAULT_AGENTARTS_TIMEOUT_SECONDS = 60.0
 
 
 def env_bool(name: str, default: bool = False) -> bool:
@@ -95,6 +98,9 @@ class Settings:
     tutor_vision_api_key: str = ""
     tutor_vision_base_url: str = DEFAULT_TUTOR_VISION_BASE_URL
     tutor_vision_model: str = DEFAULT_TUTOR_VISION_MODEL
+    agentarts_api_key: str = ""
+    agentarts_base_url: str = DEFAULT_AGENTARTS_BASE_URL
+    agentarts_timeout_seconds: float = DEFAULT_AGENTARTS_TIMEOUT_SECONDS
     database_url: str = MYSQL_DATABASE_URL
     mock_llm: bool = False
     jwt_secret_key: str = "change-me-in-env"
@@ -162,6 +168,9 @@ class Settings:
                 or DEFAULT_TUTOR_VISION_BASE_URL
             ).rstrip("/"),
             tutor_vision_model=os.getenv("TUTOR_VISION_MODEL", DEFAULT_TUTOR_VISION_MODEL),
+            agentarts_api_key=os.getenv("AGENTARTS_API_KEY", ""),
+            agentarts_base_url=os.getenv("AGENTARTS_BASE_URL", DEFAULT_AGENTARTS_BASE_URL).rstrip("/"),
+            agentarts_timeout_seconds=float(os.getenv("AGENTARTS_TIMEOUT_SECONDS", str(DEFAULT_AGENTARTS_TIMEOUT_SECONDS))),
             database_url=os.getenv("DATABASE_URL", MYSQL_DATABASE_URL),
             mock_llm=os.getenv("MOCK_LLM", "false").lower() == "true",
             jwt_secret_key=os.getenv("JWT_SECRET_KEY", "change-me-in-env"),
