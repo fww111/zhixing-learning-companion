@@ -1,4 +1,4 @@
-import { Activity, BookOpen, CheckCircle2, GitBranch, LogOut, Network, Route, UserRound } from "lucide-react";
+import { Activity, BookOpen, Bot, CheckCircle2, GitBranch, LogOut, Network, Route, UserRound } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { listCourses, type Course } from "../api/client";
@@ -163,6 +163,14 @@ export function AppLayout() {
             <span>学习评估</span>
           </>
         ))}
+
+        <div className="nav-section-label">AI 互动</div>
+        <NavLink className={() => /\/courses\/\d+\/tutor-stage/.test(location.pathname) ? "active" : ""} to={`/courses/${activeCourseId ?? 1}/tutor-stage`}>
+          <>
+            <Bot size={16} />
+            <span>AI 对话大屏</span>
+          </>
+        </NavLink>
 
         <div className="nav-progress">
           <span>画像完整度</span>

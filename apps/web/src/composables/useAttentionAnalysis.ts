@@ -141,6 +141,8 @@ export function useAttentionAnalysis(options?: UseAttentionAnalysisOptions) {
           const faceBlendshapes = result.faceBlendshapes?.[0]?.categories ?? [];
           const matrix = result.facialTransformationMatrixes?.[0]?.data;
           const signals: FaceFrameSignals = extractFaceSignals(faceBlendshapes, matrix, nowMs);
+          // 临时调试：暴露原始信号供阈值校准（验证完移除）
+          (window as unknown as { __attentionDebug?: FaceFrameSignals }).__attentionDebug = signals;
           const snapshot = machineRef.current.update(signals);
           aggregatorRef.current.push(snapshot.state, nowMs);
 
@@ -187,7 +189,14 @@ export function useAttentionAnalysis(options?: UseAttentionAnalysisOptions) {
         });
         streamRef.current = stream;
         video.srcObject = stream;
-        await video.play().catch(() => undefined);
+        // 授权弹窗等待期间用户手势可能过期导致 play 被拒：注册一次性手势恢复
+        await video.play().catch(() => {
+          const resume = (): void => {
+            void video.play().catch(() => undefined);
+          };
+          window.addEventListener("click", resume, { once: true });
+          window.addEventListener("keydown", resume, { once: true });
+        });
 
         const landmarker = await ensureLandmarker();
         machineRef.current = new AttentionStateMachine();
