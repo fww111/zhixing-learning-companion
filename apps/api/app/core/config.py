@@ -6,6 +6,9 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 
+_REPO_ROOT = Path(__file__).resolve().parents[4]
+
+
 MYSQL_DATABASE_URL = "mysql+pymysql://root:709055@127.0.0.1:3306/sortbei11?charset=utf8mb4"
 DEFAULT_LLM_BASE_URL = "https://api.deepseek.com/v1"
 DEFAULT_LLM_MODEL = "deepseek-v4-pro"
@@ -13,9 +16,9 @@ DEFAULT_NEO4J_BOLT_URI = "bolt://127.0.0.1:7687"
 DEFAULT_NEO4J_USER = "neo4j"
 DEFAULT_NEO4J_PASSWORD = ""
 DEFAULT_EMBEDDING_PROVIDER = "local_bge"
-DEFAULT_EMBEDDING_MODEL = "D:/softbei/a3/data/models/embeddings/BAAI/bge-m3"
+DEFAULT_EMBEDDING_MODEL = "BAAI/bge-m3"
 DEFAULT_EMBEDDING_DEVICE = "cpu"
-DEFAULT_EMBEDDING_CACHE_DIR = "D:/softbei/a3/data/models/embeddings"
+DEFAULT_EMBEDDING_CACHE_DIR = str(_REPO_ROOT / "data" / "models" / "embeddings")
 DEFAULT_EMBEDDING_BATCH_SIZE = 16
 DEFAULT_EMBEDDING_MAX_CHARS = 512
 DEFAULT_EMBEDDING_MAX_SEQ_LENGTH = 512
@@ -29,7 +32,7 @@ DEFAULT_MINERU_LANGUAGE = "ch"
 DEFAULT_MILVUS_URI = "http://127.0.0.1:19530"
 DEFAULT_OPENMAIC_BASE_URL = "http://127.0.0.1:3000"
 DEFAULT_VOXCPM_MODEL_ID = "openbmb/VoxCPM2"
-DEFAULT_VOXCPM_CACHE_DIR = "D:/softbei/a3/data/models/voxcpm"
+DEFAULT_VOXCPM_CACHE_DIR = str(_REPO_ROOT / "data" / "models" / "voxcpm")
 DEFAULT_TUTOR_VISION_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
 DEFAULT_TUTOR_VISION_MODEL = "qwen3.7-plus"
 # AgentArts 平台发布的应用 API 地址，形态为 https://{endpoint}/v1/{app_id}/chat/completions

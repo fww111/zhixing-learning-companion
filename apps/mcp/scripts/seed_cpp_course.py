@@ -178,7 +178,7 @@ def seed(username: str, dry_run: bool) -> None:
 
     from sqlalchemy import select
 
-    from app.models.course import Course, CourseMaterial, KnowledgeChunk
+    from app.models.course import Course, CourseMaterial, GraphBuildJob, KnowledgeChunk
     from app.models.user import User
     from app.db import SessionLocal
     from app.services.graph_store import Neo4jGraphStore
@@ -211,47 +211,68 @@ def seed(username: str, dry_run: bool) -> None:
             db.flush()
             print(f"[ok] created course {spec['course']} (id={course.id})")
 
+        # Capture ids inside the session so they survive commit/close (avoids DetachedInstanceError).
+        user_id = user.id
+        course_id = course.id
+
         existing_chunks = db.scalars(
-            select(KnowledgeChunk).where(KnowledgeChunk.course_id == course.id)
+            select(KnowledgeChunk).where(KnowledgeChunk.course_id == course_id)
         ).all()
-        if existing_chunks:
-            print(f"[skip] course already has {len(existing_chunks)} chunks; delete course first to re-seed")
-            return
-
-        material = CourseMaterial(
-            course_id=course.id,
-            user_id=user.id,
-            filename="C++算法学习教材（内置语料）.md",
-            file_type="md",
-            storage_path=str(SEED_DIR / "corpus"),
-            size_bytes=sum(len(text.encode("utf-8")) for text in corpus_text.values()),
-            parse_status="parsed",
-        )
-        db.add(material)
-        db.flush()
-
         chunk_ids: dict[str, int] = {}
-        for index, section in enumerate(sections):
-            chunk = KnowledgeChunk(
-                course_id=course.id,
-                material_id=material.id,
-                chunk_index=index,
-                source_locator=f"{section['chapter_name']}#{section['name']}",
-                heading=section["name"],
-                content=corpus_text[section["id"]],
-                token_count=len(corpus_text[section["id"]]),
-                embedding_id="",
+        if existing_chunks:
+            by_locator = {chunk.source_locator: chunk.id for chunk in existing_chunks}
+            for section in sections:
+                locator = f"{section['chapter_name']}#{section['name']}"
+                if locator in by_locator:
+                    chunk_ids[section["id"]] = by_locator[locator]
+            print(f"[ok] reusing {len(chunk_ids)}/{len(sections)} existing chunks for course id={course_id}")
+        else:
+            material = CourseMaterial(
+                course_id=course_id,
+                user_id=user_id,
+                filename="C++算法学习教材（内置语料）.md",
+                file_type="md",
+                storage_path=str(SEED_DIR / "corpus"),
+                size_bytes=sum(len(text.encode("utf-8")) for text in corpus_text.values()),
+                parse_status="parsed",
             )
-            db.add(chunk)
+            db.add(material)
             db.flush()
-            chunk_ids[section["id"]] = chunk.id
-        db.commit()
-        print(f"[ok] inserted {len(chunk_ids)} knowledge chunks")
+            for index, section in enumerate(sections):
+                chunk = KnowledgeChunk(
+                    course_id=course_id,
+                    material_id=material.id,
+                    chunk_index=index,
+                    source_locator=f"{section['chapter_name']}#{section['name']}",
+                    heading=section["name"],
+                    content=corpus_text[section["id"]],
+                    token_count=len(corpus_text[section["id"]]),
+                    embedding_id="",
+                )
+                db.add(chunk)
+                db.flush()
+                chunk_ids[section["id"]] = chunk.id
+            db.commit()
+            print(f"[ok] inserted {len(chunk_ids)} knowledge chunks")
+
+    # Mark the graph build as succeeded so CourseService.get_knowledge_graph returns it.
+    with SessionLocal() as db:
+        job = db.scalar(
+            select(GraphBuildJob).where(
+                GraphBuildJob.course_id == course_id,
+                GraphBuildJob.status == "succeeded",
+            ).limit(1)
+        )
+        if job is None:
+            job = GraphBuildJob(course_id=course_id, status="succeeded", current_stage="done", progress=100)
+            db.add(job)
+            db.commit()
+            print(f"[ok] graph build job marked succeeded (id={job.id})")
 
     nodes, edges = build_graph(spec, sections, chunk_ids)
     store = Neo4jGraphStore()
     try:
-        store.replace_course_graph(user.id, course.id, nodes, edges)
+        store.replace_course_graph(user_id, course_id, nodes, edges)
         print(f"[ok] Neo4j graph replaced: {len(nodes)} nodes / {len(edges)} edges")
     finally:
         store.close()

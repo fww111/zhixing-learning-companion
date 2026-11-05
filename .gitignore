@@ -18,6 +18,7 @@ data/models/
 data/neo4j/
 data/ocr/
 data/tmp/
+data/mcp/
 OpenMAIC-main/**/.next/
 OpenMAIC-main/**/node_modules/
 OpenMAIC-main/**/dist/
@@ -56,3 +57,4 @@ cache/
 
 # MediaPipe vision wasm 由 npm 脚本从 node_modules 拷贝（41MB，不入库）
 apps/web/public/mediapipe/wasm/
+*.egg-info/

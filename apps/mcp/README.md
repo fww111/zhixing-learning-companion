@@ -20,7 +20,17 @@ uv run python -m mcp_servers.graph_server        # http://0.0.0.0:8101/mcp
 uv run python -m mcp_servers.assessment_server   # http://0.0.0.0:8102/mcp
 ```
 
-环境变量：`MCP_HOST`（默认 0.0.0.0）、`MCP_PORT`（覆盖默认端口）、`MCP_ACCESS_TOKEN`（设置后要求 `Authorization: Bearer <token>`）。
+环境变量：`MCP_HOST`（默认 0.0.0.0）、`MCP_PORT`（覆盖默认端口）、`MCP_ACCESS_TOKEN`（设置后要求 `Authorization: Bearer <token>`）、`MCP_AUTO_INIT_DB`（设为 true 时启动前自动建表）。
+
+本机 MySQL 未启动时，可用 sqlite 先联调 profile-server（graph-server 仍必须 Neo4j）：
+
+```bash
+cd apps/mcp
+DATABASE_URL=sqlite:///./data/mcp_local.db MCP_AUTO_INIT_DB=true \
+  uv run python -m mcp_servers.profile_server
+# HTTP 端到端冒烟脚本（initialize + get/save 工具调用）：
+uv run python scripts/smoke_http.py
+```
 
 ## 测试
 
@@ -36,6 +46,12 @@ uv run pytest -q
 ```bash
 docker build -t zhixing-mcp-servers -f apps/mcp/Dockerfile .
 docker run -d --env-file .env -p 8100:8100 -p 8101:8101 -p 8102:8102 zhixing-mcp-servers
+```
+
+或在仓库根目录使用 compose（变量与数据库布局见 `docs/agentarts/06-MCP 配置手册.md`）：
+
+```bash
+docker compose up -d mcp
 ```
 
 构建上下文为仓库根目录。镜像同时暴露三个 `/mcp` 端点，可在 AgentArts「MCP → 自定义接入」逐一登记调试。

@@ -49,7 +49,7 @@ Start the backend:
 
 ```powershell
 conda activate a3
-cd D:\softbei\a3\apps\api
+cd .\apps\api
 pip install -r requirements.txt
 python -m uvicorn app.main:app --reload --port 8000
 ```
@@ -57,21 +57,21 @@ python -m uvicorn app.main:app --reload --port 8000
 Install frontend dependencies:
 
 ```powershell
-cd D:\softbei\a3\apps\web
+cd .\apps\web
 npm install
 ```
 
 Start the frontend:
 
 ```powershell
-cd D:\softbei\a3\apps\web
+cd .\apps\web
 npm run dev
 ```
 
 Build the frontend:
 
 ```powershell
-cd D:\softbei\a3\apps\web
+cd .\apps\web
 npm run build
 ```
 
@@ -281,16 +281,16 @@ Before reporting work as complete, run the relevant checks:
 
 ```powershell
 python -m pytest apps/api/tests -q
-cd D:\softbei\a3\apps\web
+cd .\apps\web
 npm run build
 ```
 
 For end-to-end smoke verification, start both services and verify the routed product flow:
 
 ```powershell
-cd D:\softbei\a3\apps\api
+cd .\apps\api
 python -m uvicorn app.main:app --reload --port 8000
-cd D:\softbei\a3\apps\web
+cd .\apps\web
 npm run dev
 ```
 

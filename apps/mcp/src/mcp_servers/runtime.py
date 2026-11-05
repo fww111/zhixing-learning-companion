@@ -72,12 +72,43 @@ def run_server(mcp: Any, default_port: int) -> None:
 
     host = os.getenv("MCP_HOST", "0.0.0.0")
     port = int(os.getenv("MCP_PORT", str(default_port)))
+    if os.getenv("MCP_AUTO_INIT_DB", "").lower().strip() in {"1", "true", "yes", "on"}:
+        # 联调场景启动前自动建表；容器内三个进程会并发执行 init_db，
+        # MySQL 下并发 create_all 可能触发 1050 already exists 竞态，
+        # 表已存在即可继续，故对"already exists"做容错忽略。
+        from app.db import init_db
+
+        logger.info("MCP_AUTO_INIT_DB enabled, creating tables before serving")
+        try:
+            init_db()
+        except Exception as exc:  # noqa: BLE001
+            msg = str(exc)
+            if "already exists" in msg.lower() or "1050" in msg:
+                logger.warning("tables already exist (concurrent init), continuing: %s", msg)
+            else:
+                raise
     app = build_asgi_app(mcp)
     logger.info("starting %s on %s:%s (streamable-http at /mcp)", mcp.name, host, port)
     uvicorn.run(app, host=host, port=port)
 
 
 def build_asgi_app(mcp: Any) -> Any:
+    # 本地联调/内网隧道场景：FastMCP 默认 host=127.0.0.1 会启用 DNS rebinding 保护，
+    # 拒绝 trycloudflare.com 等隧道 Host（421 Invalid Host header）。
+    # 仅作为开发联调开关，生产部署（ECS/公网域名）不应全局关闭。
+    transport_security = getattr(mcp.settings, "transport_security", None)
+    if transport_security is None or transport_security.enable_dns_rebinding_protection:
+        try:
+            from mcp.server.transport_security import TransportSecuritySettings
+
+            mcp.settings.transport_security = TransportSecuritySettings(
+                enable_dns_rebinding_protection=False,
+                allowed_hosts=[],
+                allowed_origins=[],
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("could not disable DNS rebinding protection: %s", exc)
+
     inner = mcp.streamable_http_app()
     token = os.getenv("MCP_ACCESS_TOKEN", "").strip()
 
