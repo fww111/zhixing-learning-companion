@@ -32,7 +32,17 @@ uv sync
 PORT=8080 uv run python -m mcp_servers.server     # http://0.0.0.0:8080/mcp + /ping
 ```
 
-环境变量：`PORT` / `MCP_PORT`（端口）、`MCP_HOST`（默认 0.0.0.0）、`MCP_SERVER`（all/profile/graph/assessment）、`MCP_AUTH_MODE`（platform/local/none）、`MCP_ACCESS_TOKEN`、`MCP_LOG_LEVEL`。完整示例见仓库根 `.env.example`。
+环境变量：`PORT` / `MCP_PORT`（端口）、`MCP_HOST`（默认 0.0.0.0）、`MCP_SERVER`（all/profile/graph/assessment）、`MCP_AUTH_MODE`（platform/local/none）、`MCP_ACCESS_TOKEN`、`MCP_AUTO_INIT_DB`（设为 true 启动前自动建表）、`MCP_LOG_LEVEL`。完整示例见仓库根 `.env.example`。
+
+本机 MySQL 未启动时，可用 sqlite 先联调 profile 工具（graph 工具仍必须 Neo4j）：
+
+```bash
+cd apps/mcp
+DATABASE_URL=sqlite:///./data/mcp_local.db MCP_AUTO_INIT_DB=true \
+  uv run python -m mcp_servers.server
+# HTTP 端到端冒烟（initialize + 建种子数据 + 工具调用）：
+uv run python scripts/smoke_http.py
+```
 
 ## 测试（不需要云服务器）
 

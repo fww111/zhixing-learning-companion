@@ -181,6 +181,12 @@ def run_server(mcp: Any, default_port: int = 8080) -> None:
 
     host = os.getenv("MCP_HOST", "0.0.0.0")
     port = int(os.getenv("PORT") or os.getenv("MCP_PORT") or str(default_port))
+    if os.getenv("MCP_AUTO_INIT_DB", "").lower().strip() in {"1", "true", "yes", "on"}:
+        # 联调场景启动前自动建表；sqlite 联调或空库首启时无需手工建表。
+        from app.db import init_db
+
+        logger.info("MCP_AUTO_INIT_DB enabled, creating tables before serving")
+        init_db()
     app = build_asgi_app(mcp)
     logger.info(
         "starting %s on %s:%s (stateless streamable-http at /mcp, health at /ping)",

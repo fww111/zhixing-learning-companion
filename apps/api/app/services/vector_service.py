@@ -123,7 +123,7 @@ class ChromaVectorService:
     def _embed_texts_with_sentence_transformer(self, texts: list[str]) -> list[list[float]]:
         model_name = getattr(settings, "embedding_model", "BAAI/bge-m3")
         device = getattr(settings, "embedding_device", "cpu")
-        cache_folder = getattr(settings, "embedding_cache_dir", "D:/softbei/a3/data/models/embeddings")
+        cache_folder = getattr(settings, "embedding_cache_dir", "data/models/embeddings")
         max_seq_length = int(getattr(settings, "embedding_max_seq_length", 512))
         model = _get_bge_transformers_encoder(
             model_name,
@@ -305,7 +305,7 @@ class MilvusVectorService(ChromaVectorService):
             getattr(settings, "embedding_provider", "hash"),
             getattr(settings, "embedding_model", "hash"),
             getattr(settings, "embedding_device", "cpu"),
-            getattr(settings, "embedding_cache_dir", "D:/softbei/a3/data/models/embeddings"),
+            getattr(settings, "embedding_cache_dir", "data/models/embeddings"),
             int(getattr(settings, "embedding_max_seq_length", 512)),
         )
 

@@ -1,0 +1,9 @@
+# 构建上下文排除：镜像只需要源码与依赖清单
+**/.venv/
+**/__pycache__/
+**/.pytest_cache/
+**/*.pyc
+apps/mcp/data/
+apps/api/data/
+data/
+.git/

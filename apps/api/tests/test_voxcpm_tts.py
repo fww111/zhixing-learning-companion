@@ -41,7 +41,7 @@ class FakeVoxCPMTTSService:
 class UnavailableVoxCPMTTSService:
     def synthesize(self, **_kwargs) -> bytes:
         raise VoxCPMTTSUnavailable(
-            "VoxCPM model is not ready. Download openbmb/VoxCPM2 to D:/softbei/a3/data/models/voxcpm first."
+            "VoxCPM model is not ready. Download openbmb/VoxCPM2 to data/models/voxcpm first."
         )
 
 

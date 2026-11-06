@@ -115,7 +115,7 @@ def default_hash_embedding_settings(monkeypatch):
             embedding_provider="hash",
             embedding_model="hash",
             embedding_device="cpu",
-            embedding_cache_dir="D:/softbei/a3/data/models/embeddings",
+            embedding_cache_dir="data/models/embeddings",
             embedding_batch_size=16,
             embedding_max_chars=512,
             embedding_max_seq_length=512,
@@ -186,7 +186,7 @@ def test_upsert_chunks_batches_local_embeddings(monkeypatch):
             embedding_provider="local_bge",
             embedding_model="BAAI/bge-m3",
             embedding_device="cpu",
-            embedding_cache_dir="D:/softbei/a3/data/models/embeddings",
+            embedding_cache_dir="data/models/embeddings",
             embedding_batch_size=2,
             embedding_max_seq_length=512,
         ),
@@ -228,7 +228,7 @@ def test_upsert_chunks_truncates_embedding_input_without_truncating_documents(mo
             embedding_provider="local_bge",
             embedding_model="BAAI/bge-m3",
             embedding_device="cpu",
-            embedding_cache_dir="D:/softbei/a3/data/models/embeddings",
+            embedding_cache_dir="data/models/embeddings",
             embedding_batch_size=16,
             embedding_max_chars=5,
             embedding_max_seq_length=512,
@@ -285,7 +285,7 @@ def test_local_bge_upsert_embeds_chunks_in_one_batch(monkeypatch):
             embedding_provider="local_bge",
             embedding_model="BAAI/bge-m3",
             embedding_device="cpu",
-            embedding_cache_dir="D:/softbei/a3/data/models/embeddings",
+            embedding_cache_dir="data/models/embeddings",
             embedding_max_seq_length=384,
         ),
     )
@@ -306,7 +306,7 @@ def test_local_bge_upsert_embeds_chunks_in_one_batch(monkeypatch):
         {"texts": ["gradient descent", "loss function"], "normalize_embeddings": True, "batch_size": 16}
     ]
     assert client.collection.upserts[0]["embeddings"] == [[0.1, 0.2], [0.3, 0.4]]
-    assert vector_service._get_sentence_transformer("BAAI/bge-m3", "cpu", "D:/softbei/a3/data/models/embeddings", 384).max_seq_length == 384
+    assert vector_service._get_sentence_transformer("BAAI/bge-m3", "cpu", "data/models/embeddings", 384).max_seq_length == 384
 
 
 def test_collection_name_includes_embedding_provider_and_model(monkeypatch):
@@ -317,7 +317,7 @@ def test_collection_name_includes_embedding_provider_and_model(monkeypatch):
             embedding_provider="local_bge",
             embedding_model="BAAI/bge-m3",
             embedding_device="cpu",
-            embedding_cache_dir="D:/softbei/a3/data/models/embeddings",
+            embedding_cache_dir="data/models/embeddings",
         ),
     )
     service = ChromaVectorService(FakeClient())
@@ -331,9 +331,9 @@ def test_collection_name_keeps_local_model_path_within_chroma_limit(monkeypatch)
         "settings",
         types.SimpleNamespace(
             embedding_provider="local_bge",
-            embedding_model="D:/softbei/a3/data/models/embeddings/BAAI/bge-m3",
+            embedding_model="BAAI/bge-m3",
             embedding_device="cpu",
-            embedding_cache_dir="D:/softbei/a3/data/models/embeddings",
+            embedding_cache_dir="data/models/embeddings",
         ),
     )
     service = ChromaVectorService(FakeClient())
@@ -368,7 +368,7 @@ def test_local_bge_provider_uses_sentence_transformer_with_d_drive_cache(monkeyp
             embedding_provider="local_bge",
             embedding_model="BAAI/bge-m3",
             embedding_device="cpu",
-            embedding_cache_dir="D:/softbei/a3/data/models/embeddings",
+            embedding_cache_dir="data/models/embeddings",
         ),
     )
     fake_module = types.SimpleNamespace(SentenceTransformer=FakeSentenceTransformer)
@@ -380,7 +380,7 @@ def test_local_bge_provider_uses_sentence_transformer_with_d_drive_cache(monkeyp
     assert service.embed_text("gradient descent") == [0.1, 0.2, 0.3]
     assert FakeSentenceTransformer.instances[0].model_name == "BAAI/bge-m3"
     assert FakeSentenceTransformer.instances[0].device == "cpu"
-    assert FakeSentenceTransformer.instances[0].cache_folder == "D:/softbei/a3/data/models/embeddings"
+    assert FakeSentenceTransformer.instances[0].cache_folder == "data/models/embeddings"
 
 
 def test_local_bge_provider_creates_model_cache_directory(monkeypatch, tmp_path):
@@ -515,7 +515,7 @@ def test_local_bge_provider_prefers_lightweight_transformers_encoder(monkeypatch
         "settings",
         types.SimpleNamespace(
             embedding_provider="local_bge",
-            embedding_model="D:/softbei/a3/data/models/embeddings/BAAI/bge-m3",
+            embedding_model="BAAI/bge-m3",
             embedding_device="cpu",
             embedding_cache_dir=str(tmp_path / "models"),
             embedding_batch_size=8,
@@ -776,12 +776,12 @@ def test_milvus_vector_service_hides_local_lite_uri_from_pymilvus_import(monkeyp
                 return FakeMilvusClientCtor
             raise AttributeError(name)
 
-    monkeypatch.setenv("MILVUS_URI", "D:/softbei/a3/data/milvus/softbei_milvus_lite.db")
+    monkeypatch.setenv("MILVUS_URI", "data/milvus/softbei_milvus_lite.db")
     monkeypatch.setattr(
         vector_service,
         "settings",
         types.SimpleNamespace(
-            milvus_uri="D:/softbei/a3/data/milvus/softbei_milvus_lite.db",
+            milvus_uri="data/milvus/softbei_milvus_lite.db",
             milvus_token="",
             milvus_user="",
             milvus_password="",
@@ -793,8 +793,8 @@ def test_milvus_vector_service_hides_local_lite_uri_from_pymilvus_import(monkeyp
     service = MilvusVectorService()
 
     assert service.client is not None
-    assert created == [{"uri": "D:/softbei/a3/data/milvus/softbei_milvus_lite.db"}]
-    assert vector_service.os.environ["MILVUS_URI"] == "D:/softbei/a3/data/milvus/softbei_milvus_lite.db"
+    assert created == [{"uri": "data/milvus/softbei_milvus_lite.db"}]
+    assert vector_service.os.environ["MILVUS_URI"] == "data/milvus/softbei_milvus_lite.db"
 
 
 def test_milvus_vector_service_can_import_real_pymilvus_with_local_lite_env_uri(monkeypatch, tmp_path):

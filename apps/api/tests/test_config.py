@@ -116,7 +116,7 @@ def test_course_knowledge_settings_are_loaded(monkeypatch):
     monkeypatch.setenv("EMBEDDING_PROVIDER", "local_bge")
     monkeypatch.setenv("EMBEDDING_MODEL", "BAAI/bge-m3")
     monkeypatch.setenv("EMBEDDING_DEVICE", "cpu")
-    monkeypatch.setenv("EMBEDDING_CACHE_DIR", "D:/softbei/a3/data/models/embeddings")
+    monkeypatch.setenv("EMBEDDING_CACHE_DIR", "data/models/embeddings")
     monkeypatch.setenv("MINERU_ENABLED", "true")
     monkeypatch.setenv("MINERU_API_TOKEN", "mineru-token")
     monkeypatch.setenv("MINERU_BASE_URL", "https://mineru.net")
@@ -147,7 +147,7 @@ def test_course_knowledge_settings_are_loaded(monkeypatch):
     assert settings.embedding_provider == "local_bge"
     assert settings.embedding_model == "BAAI/bge-m3"
     assert settings.embedding_device == "cpu"
-    assert settings.embedding_cache_dir == "D:/softbei/a3/data/models/embeddings"
+    assert settings.embedding_cache_dir == "data/models/embeddings"
     assert settings.mineru_enabled is True
     assert settings.mineru_api_token == "mineru-token"
     assert settings.mineru_base_url == "https://mineru.net"
