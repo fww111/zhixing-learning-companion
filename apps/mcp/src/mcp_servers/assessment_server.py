@@ -418,11 +418,17 @@ def list_wrong_questions_impl(user_id: int, course_id: int, limit: int = 100) ->
 # Registration
 # ---------------------------------------------------------------------------
 
-mcp.tool(name="submit_comprehensive_assessment")(submit_comprehensive_assessment_impl)
-mcp.tool(name="submit_learning_event")(submit_learning_event_impl)
-mcp.tool(name="get_node_mastery")(get_node_mastery_impl)
-mcp.tool(name="plan_learning_path")(plan_learning_path_impl)
-mcp.tool(name="list_wrong_questions")(list_wrong_questions_impl)
+# Single registry shared with the unified single-port entrypoint.
+TOOL_IMPLS = {
+    "submit_comprehensive_assessment": submit_comprehensive_assessment_impl,
+    "submit_learning_event": submit_learning_event_impl,
+    "get_node_mastery": get_node_mastery_impl,
+    "plan_learning_path": plan_learning_path_impl,
+    "list_wrong_questions": list_wrong_questions_impl,
+}
+
+for _name, _impl in TOOL_IMPLS.items():
+    mcp.tool(name=_name)(_impl)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,22 @@
-"""Shared runtime helpers for the three MCP servers."""
+"""Shared runtime helpers for the MCP servers.
+
+This module is aligned with the Huawei Cloud AgentArts *MCP Server deployment*
+contract (highcode-agentarts / agentarts_10_069 + agentarts_10_080):
+
+* Streamable HTTP, stateless mode (``stateless_http=True``), single ``POST /mcp`` endpoint.
+* ``GET /ping`` health probe for the runtime gateway.
+* Tolerate the platform-injected ``Mcp-Session-Id`` header (stateless mode).
+* Tolerate gateway ``Host``/``Origin`` headers: the SDK's DNS-rebinding guard only
+  allows localhost by default and rejects cloud traffic (HTTP 421).
+* Single-port deployment: ``PORT`` (or ``MCP_PORT``) overrides the default.
+* Auth is handled by the runtime gateway in platform mode; a local bearer guard
+  is opt-in via ``MCP_AUTH_MODE=local``.
+
+References:
+  https://support.huaweicloud.com/highcode-agentarts/agentarts_10_069.md
+  https://support.huaweicloud.com/highcode-agentarts/agentarts_10_080.md
+  https://support.huaweicloud.com/highcode-agentarts/agentarts_10_126.md
+"""
 
 from __future__ import annotations
 
@@ -8,6 +26,11 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import datetime
 from typing import Any
+
+from mcp.server import transport_security
+from mcp.server.streamable_http_manager import TransportSecuritySettings
+from starlette.requests import Request
+from starlette.responses import JSONResponse
 
 from mcp_servers._bootstrap import ensure_api_importable
 
@@ -19,6 +42,15 @@ from app import db as app_db  # noqa: E402
 from app.models.course import Course  # noqa: E402
 
 logger = logging.getLogger("mcp_servers")
+
+# AgentArts routes traffic through its own gateway, so the Host header seen by
+# uvicorn is the runtime domain, never 127.0.0.1. The official sample patches
+# this validator and disables DNS-rebinding protection for the same reason.
+transport_security.TransportSecurityMiddleware._validate_host = lambda _self, _host: True  # noqa: E731
+
+AGENTARTS_TRANSPORT_SECURITY = TransportSecuritySettings(
+    enable_dns_rebinding_protection=False,
+)
 
 
 class CourseLookupError(RuntimeError):
@@ -64,31 +96,63 @@ def clamp_limit(limit: int, default: int = 50, maximum: int = 200) -> int:
     return min(limit, maximum)
 
 
-def run_server(mcp: Any, default_port: int) -> None:
-    """Run a FastMCP server over streamable HTTP with optional bearer auth."""
-    import uvicorn
+# ---------------------------------------------------------------------------
+# ASGI application construction
+# ---------------------------------------------------------------------------
 
-    logging.basicConfig(level=os.getenv("MCP_LOG_LEVEL", "INFO"))
+_PING_FLAG = "_zhixing_ping_registered"
 
-    host = os.getenv("MCP_HOST", "0.0.0.0")
-    port = int(os.getenv("MCP_PORT", str(default_port)))
-    app = build_asgi_app(mcp)
-    logger.info("starting %s on %s:%s (streamable-http at /mcp)", mcp.name, host, port)
-    uvicorn.run(app, host=host, port=port)
+
+def register_health_route(mcp: Any) -> None:
+    """Register ``GET /ping`` once (the AgentArts runtime health probe)."""
+    if getattr(mcp, _PING_FLAG, False):
+        return
+
+    @mcp.custom_route("/ping", methods=["GET"])
+    async def ping(_request: Request) -> JSONResponse:
+        return JSONResponse({"status": "ok", "service": mcp.name, "message": "pong"})
+
+    setattr(mcp, _PING_FLAG, True)
 
 
 def build_asgi_app(mcp: Any) -> Any:
-    inner = mcp.streamable_http_app()
-    token = os.getenv("MCP_ACCESS_TOKEN", "").strip()
+    """Build the ASGI app used both by ``uvicorn`` and by local protocol tests.
 
-    if not token:
+    ``MCP_AUTH_MODE``:
+      * ``platform`` (default): no local bearer check. The AgentArts runtime
+        gateway already authenticates with its own API Key; re-checking a local
+        token here would reject every platform call with 401.
+      * ``local``: require ``Authorization: Bearer $MCP_ACCESS_TOKEN`` on
+        ``/mcp`` calls (standalone ECS / local debugging only). ``/ping`` is
+        always public so the gateway health probe is not blocked.
+      * ``none``: explicitly disable all local auth.
+    """
+    register_health_route(mcp)
+    inner = mcp.streamable_http_app()
+
+    mode = os.getenv("MCP_AUTH_MODE", "platform").strip().lower()
+    token = os.getenv("MCP_ACCESS_TOKEN", "").strip()
+    if mode == "local" and not token:
+        logger.warning("MCP_AUTH_MODE=local but MCP_ACCESS_TOKEN is empty; running without auth")
+
+    if mode != "local" or not token:
         return inner
 
     async def guarded(scope: dict, receive: Any, send: Any) -> None:
         if scope.get("type") != "http":
             await inner(scope, receive, send)
             return
-        headers = {key.decode("latin-1").lower(): value.decode("latin-1") for key, value in scope.get("headers") or []}
+
+        path = scope.get("path", "")
+        method = scope.get("method", "GET").upper()
+        if path == "/ping" and method == "GET":
+            await inner(scope, receive, send)
+            return
+
+        headers = {
+            key.decode("latin-1").lower(): value.decode("latin-1")
+            for key, value in scope.get("headers") or []
+        }
         if headers.get("authorization") != f"Bearer {token}":
             await send(
                 {
@@ -107,3 +171,21 @@ def build_asgi_app(mcp: Any) -> Any:
         await inner(scope, receive, send)
 
     return guarded
+
+
+def run_server(mcp: Any, default_port: int = 8080) -> None:
+    """Run a FastMCP server over stateless Streamable HTTP on a single port."""
+    import uvicorn
+
+    logging.basicConfig(level=os.getenv("MCP_LOG_LEVEL", "INFO"))
+
+    host = os.getenv("MCP_HOST", "0.0.0.0")
+    port = int(os.getenv("PORT") or os.getenv("MCP_PORT") or str(default_port))
+    app = build_asgi_app(mcp)
+    logger.info(
+        "starting %s on %s:%s (stateless streamable-http at /mcp, health at /ping)",
+        mcp.name,
+        host,
+        port,
+    )
+    uvicorn.run(app, host=host, port=port, proxy_headers=True, forwarded_allow_ips="*")

@@ -93,7 +93,9 @@ export function buildWrongQuestionBookModel(input: {
 
 export function evaluateWrongQuestionRedo(
   item: WrongQuestionBookItem,
-  redo: WrongQuestionRedoInput
+  redo: WrongQuestionRedoInput,
+  /** 服务端沙箱 verdict：accepted 时编程题直接判过（真实运行结果优先于本地比对） */
+  serverVerdict?: string | null
 ): WrongQuestionRedoResult {
   if (item.type === "quiz") {
     const passed = redo.selectedAnswerIndex !== undefined && redo.selectedAnswerIndex === item.correctAnswerIndex;
@@ -103,12 +105,17 @@ export function evaluateWrongQuestionRedo(
     };
   }
 
+  const serverAccepted = serverVerdict === "accepted";
   const actual = normalizeOutput(redo.actualOutput || "");
   const expected = normalizeOutput(item.expectedOutput || "");
-  const passed = Boolean(expected && actual === expected);
+  const passed = serverAccepted || Boolean(expected && actual === expected);
   return {
     passed,
-    message: passed ? "编程题输出匹配，重做通过" : "运行输出与期望输出不一致。"
+    message: serverAccepted
+      ? "服务端沙箱真实运行通过"
+      : passed
+        ? "编程题输出匹配，重做通过"
+        : "运行输出与期望输出不一致。"
   };
 }
 
@@ -117,8 +124,9 @@ export function buildRedoAssessmentPayload(input: {
   item: WrongQuestionBookItem;
   redo: WrongQuestionRedoInput;
   studentId: string;
+  serverVerdict?: string | null;
 }): ComprehensiveAssessmentPayload {
-  const result = evaluateWrongQuestionRedo(input.item, input.redo);
+  const result = evaluateWrongQuestionRedo(input.item, input.redo, input.serverVerdict);
   const quizAnswers = input.item.type === "quiz"
     ? [
       {
@@ -161,7 +169,8 @@ export function buildRedoAssessmentPayload(input: {
       expected_output: input.item.type === "code" ? input.item.expectedOutput || "" : "OK",
       actual_output: input.item.type === "code" ? input.redo.actualOutput || "" : "OK",
       passed: result.passed,
-      attempts: Math.max(1, input.redo.attempts || 1)
+      attempts: Math.max(1, input.redo.attempts || 1),
+      server_verdict: input.serverVerdict || undefined
     },
     detail: JSON.stringify({
       assessment_type: "wrong_question_redo",
@@ -213,7 +222,7 @@ function buildWrongQuestionItems(events: LearningProfileEvent[]): RawWrongQuesti
       const payload = objectValue(event.event_payload);
       const assessment = objectValue(payload.assessment) || payload;
       const quizAnswers = arrayValue(assessment.quiz_answers);
-      const codeAttempt = objectValue(assessment.code_attempt) || objectValue(payload.code_attempt);
+      const codeAttempt = objectWithKeys(assessment.code_attempt) || objectWithKeys(payload.code_attempt);
       const quizWrong = quizAnswers
         .filter((answer) => !isQuizAnswerCorrect(answer))
         .map((answer, index) => wrongQuizItem(event, answer, index));
@@ -415,6 +424,12 @@ function textValue(record: GraphRecord | undefined, key: string, fallback = ""):
 
 function objectValue(value: unknown): GraphRecord {
   return value && typeof value === "object" && !Array.isArray(value) ? value as GraphRecord : {};
+}
+
+/** 与 objectValue 不同：空对象返回 undefined，避免缺失的 code_attempt 被误判为失败的编程尝试。 */
+function objectWithKeys(value: unknown): GraphRecord | undefined {
+  const record = objectValue(value);
+  return Object.keys(record).length ? record : undefined;
 }
 
 function arrayValue(value: unknown): GraphRecord[] {

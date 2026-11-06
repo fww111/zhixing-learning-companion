@@ -444,14 +444,21 @@ def list_path_revisions_impl(user_id: int, course_id: int, limit: int = 20) -> d
 # Registration
 # ---------------------------------------------------------------------------
 
-mcp.tool(name="get_student_profile")(get_student_profile_impl)
-mcp.tool(name="save_student_profile")(save_student_profile_impl)
-mcp.tool(name="append_interview_message")(append_interview_message_impl)
-mcp.tool(name="list_interview_messages")(list_interview_messages_impl)
-mcp.tool(name="record_profile_event")(record_profile_event_impl)
-mcp.tool(name="list_profile_events")(list_profile_events_impl)
-mcp.tool(name="list_profile_update_logs")(list_profile_update_logs_impl)
-mcp.tool(name="list_path_revisions")(list_path_revisions_impl)
+# Single registry so both this standalone server and the unified single-port
+# entrypoint (mcp_servers.server) expose exactly the same tool set.
+TOOL_IMPLS = {
+    "get_student_profile": get_student_profile_impl,
+    "save_student_profile": save_student_profile_impl,
+    "append_interview_message": append_interview_message_impl,
+    "list_interview_messages": list_interview_messages_impl,
+    "record_profile_event": record_profile_event_impl,
+    "list_profile_events": list_profile_events_impl,
+    "list_profile_update_logs": list_profile_update_logs_impl,
+    "list_path_revisions": list_path_revisions_impl,
+}
+
+for _name, _impl in TOOL_IMPLS.items():
+    mcp.tool(name=_name)(_impl)
 
 
 if __name__ == "__main__":

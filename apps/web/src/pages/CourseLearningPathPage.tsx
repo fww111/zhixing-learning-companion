@@ -231,7 +231,8 @@ export function CourseLearningPathPage() {
                       index % 2 === 0 ? "left" : "right",
                       `status-${stage.path_status}`,
                       stage.is_current ? "current" : "",
-                      stage.is_remedial ? "remedial" : ""
+                      stage.is_remedial ? "remedial" : "",
+                      stage.is_today_task ? "today-pulse" : ""
                     ].filter(Boolean).join(" ")}
                     key={stage.node_id}
                   >

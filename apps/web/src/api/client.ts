@@ -379,6 +379,66 @@ export interface TutorChatResponse {
   suggested_followups?: string[];
 }
 
+/** 错题三步闭环：AI 讲清楚 → 拓展同类题 → AI 问学生答 */
+export interface WrongQuestionContextPayload {
+  course_id: number;
+  node_id: string;
+  topic: string;
+  question_type: "quiz" | "code";
+  prompt: string;
+  options: string[];
+  selected_answer: string;
+  correct_answer: string;
+  code: string;
+  actual_output: string;
+  expected_output: string;
+  attempts: number;
+}
+
+export interface WrongQuestionExplanation {
+  diagnosis: string;
+  explanation: string;
+  key_points: string[];
+  evidence_chunks: TutorEvidenceChunk[];
+  verification_report: Record<string, unknown>;
+}
+
+export interface VariationQuestion {
+  id: string;
+  question_type: "quiz" | "short_answer";
+  prompt: string;
+  options: string[];
+  correct_answer_index: number | null;
+  reference_answer: string;
+  focus: string;
+  difficulty: "基础" | "进阶" | "挑战";
+}
+
+export interface VariationBundle {
+  node_id: string;
+  topic: string;
+  source_question_type: "quiz" | "code";
+  questions: VariationQuestion[];
+  evidence_chunks: TutorEvidenceChunk[];
+}
+
+export interface InteractiveAnswerPayload {
+  course_id: number;
+  node_id: string;
+  topic: string;
+  question: VariationQuestion;
+  student_answer_index?: number;
+  student_answer_text?: string;
+}
+
+export interface InteractiveAnswerVerdict {
+  correct: boolean;
+  score: number;
+  comment: string;
+  reference_answer: string;
+  focus: string;
+}
+
 export interface AuthUser {
   id: number;
   username: string;
@@ -559,6 +619,8 @@ export interface CodeAttemptPayload {
   actual_output: string;
   passed: boolean;
   attempts: number;
+  /** 服务端沙箱判分结论（accepted/wrong_answer/compile_error/runtime_error/timeout） */
+  server_verdict?: string;
 }
 
 export interface ComprehensiveAssessmentPayload {
@@ -674,7 +736,7 @@ export async function generateLearningPackage(
     body: JSON.stringify(payload)
   });
   if (!response.ok) {
-    throw new Error(`鐢熸垚澶辫触锛?{response.status}`);
+throw new Error(`生成失败（${response.status}）`);
   }
   return response.json();
 }
@@ -690,7 +752,7 @@ export async function pollOpenMAICClassroom(
     headers: authHeaders(token)
   });
   if (!response.ok) {
-    throw await apiError(response, "鏌ヨ OpenMAIC 璇惧爞浠诲姟澶辫触");
+throw await apiError(response, "查询 OpenMAIC 课堂任务失败");
   }
   return response.json();
 }
@@ -717,7 +779,7 @@ export async function startProfileInterview(token: string, courseId?: number): P
     body: JSON.stringify({ course_id: courseId ?? null })
   });
   if (!response.ok) {
-    throw await apiError(response, "鍒涘缓鐢诲儚璁胯皥澶辫触");
+throw await apiError(response, "创建画像访谈失败");
   }
   return response.json();
 }
@@ -734,7 +796,7 @@ export async function answerProfileInterview(
     body: JSON.stringify({ answer, topic })
   });
   if (!response.ok) {
-    throw await apiError(response, "鎻愪氦鐢诲儚鍥炵瓟澶辫触");
+throw await apiError(response, "提交画像回答失败");
   }
   return response.json();
 }
@@ -745,7 +807,7 @@ export async function confirmProfileInterview(token: string, interviewId: number
     headers: authHeaders(token)
   });
   if (!response.ok) {
-    throw await apiError(response, "纭鐢诲儚澶辫触");
+throw await apiError(response, "确认画像失败");
   }
   return response.json();
 }
@@ -759,7 +821,7 @@ export async function getMyProfile(token: string, courseId?: number): Promise<St
     return undefined;
   }
   if (!response.ok) {
-    throw await apiError(response, "鍔犺浇瀛︾敓鐢诲儚澶辫触");
+throw await apiError(response, "加载学生画像失败");
   }
   return response.json();
 }
@@ -770,7 +832,7 @@ export async function listCourses(token: string): Promise<Course[]> {
     cache: "no-store"
   });
   if (!response.ok) {
-    throw await apiError(response, "鍔犺浇璇剧▼澶辫触");
+throw await apiError(response, "加载课程失败");
   }
   return response.json();
 }
@@ -780,7 +842,7 @@ export async function getCourse(token: string, courseId: number): Promise<Course
     headers: authHeaders(token)
   });
   if (!response.ok) {
-    throw await apiError(response, "鍔犺浇璇剧▼澶辫触");
+throw await apiError(response, "加载课程失败");
   }
   return response.json();
 }
@@ -792,7 +854,7 @@ export async function createCourse(token: string, payload: CourseCreatePayload):
     body: JSON.stringify(payload)
   });
   if (!response.ok) {
-    throw await apiError(response, "鍒涘缓璇剧▼澶辫触");
+throw await apiError(response, "创建课程失败");
   }
   return response.json();
 }
@@ -845,7 +907,7 @@ export async function uploadMaterial(token: string, courseId: number, file: File
     body: formData
   });
   if (!response.ok) {
-    throw await apiError(response, "涓婁紶璧勬枡澶辫触");
+throw await apiError(response, "上传材料失败");
   }
   return response.json();
 }
@@ -855,7 +917,7 @@ export async function listMaterials(token: string, courseId: number): Promise<Co
     headers: authHeaders(token)
   });
   if (!response.ok) {
-    throw await apiError(response, "鍔犺浇璇剧▼璧勬枡澶辫触");
+throw await apiError(response, "加载课程材料失败");
   }
   return response.json();
 }
@@ -865,7 +927,7 @@ export async function listChunks(token: string, courseId: number): Promise<Knowl
     headers: authHeaders(token)
   });
   if (!response.ok) {
-    throw await apiError(response, "鍔犺浇鐭ヨ瘑鍒囩墖澶辫触");
+throw await apiError(response, "加载知识切片失败");
   }
   return response.json();
 }
@@ -890,7 +952,7 @@ export async function rebuildVectorIndex(token: string, courseId: number): Promi
     headers: authHeaders(token)
   });
   if (!response.ok) {
-    throw await apiError(response, "閲嶅缓鍚戦噺绱㈠紩澶辫触");
+throw await apiError(response, "重建向量索引失败");
   }
   return response.json();
 }
@@ -901,7 +963,7 @@ export async function buildKnowledgeGraph(token: string, courseId: number): Prom
     headers: authHeaders(token)
   });
   if (!response.ok) {
-    throw await apiError(response, "鏋勫缓鐭ヨ瘑鍥捐氨澶辫触");
+throw await apiError(response, "构建知识图谱失败");
   }
   return response.json();
 }
@@ -911,7 +973,7 @@ export async function getKnowledgeGraph(token: string, courseId: number): Promis
     headers: authHeaders(token)
   });
   if (!response.ok) {
-    throw await apiError(response, "鍔犺浇鐭ヨ瘑鍥捐氨澶辫触");
+throw await apiError(response, "加载知识图谱失败");
   }
   return response.json();
 }
@@ -927,7 +989,7 @@ export async function planCourseLearningPath(
     body: JSON.stringify(payload)
   });
   if (!response.ok) {
-    throw await apiError(response, "鐢熸垚瀛︿範璺緞澶辫触");
+throw await apiError(response, "生成学习路径失败");
   }
   return response.json();
 }
@@ -994,7 +1056,7 @@ export async function submitAssessment(token: string, payload: AssessmentSubmitP
     body: JSON.stringify(payload)
   });
   if (!response.ok) {
-    throw await apiError(response, "鎻愪氦瀛︿範璇勪及澶辫触");
+    throw await apiError(response, "提交学习评估失败");
   }
   return response.json();
 }
@@ -1033,6 +1095,106 @@ export async function deleteMaterial(token: string, courseId: number, materialId
     headers: authHeaders(token)
   });
   if (!response.ok) {
-    throw await apiError(response, "鍒犻櫎璧勬枡澶辫触");
+    throw await apiError(response, "删除材料失败");
+  }
+}
+
+async function postWrongQuestionTutor<T>(token: string | undefined, path: string, payload: unknown, timeoutMs = 90000): Promise<T> {
+  const controller = new AbortController();
+  const timeoutId = globalThis.setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(`/api/wrong-questions/${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders(token) },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+    if (!response.ok) {
+      throw await apiError(response, "错题 AI 助教请求失败");
+    }
+    return response.json();
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new Error("错题 AI 助教请求超时，请稍后重试");
+    }
+    throw error;
+  } finally {
+    globalThis.clearTimeout(timeoutId);
+  }
+}
+
+/** 第一步：AI 基于课程证据讲清楚错题 */
+export function explainWrongQuestion(
+  token: string | undefined,
+  payload: WrongQuestionContextPayload
+): Promise<WrongQuestionExplanation> {
+  return postWrongQuestionTutor<WrongQuestionExplanation>(token, "explain", payload);
+}
+
+/** 第二步：生成同知识点拓展变式题（不下发答案） */
+export function generateWrongQuestionVariations(
+  token: string | undefined,
+  payload: WrongQuestionContextPayload
+): Promise<VariationBundle> {
+  return postWrongQuestionTutor<VariationBundle>(token, "variations", payload);
+}
+
+/** 第三步：AI 问、学生答——提交一道变式题作答，返回即时判分点评 */
+export function submitInteractiveAnswer(
+  token: string | undefined,
+  payload: InteractiveAnswerPayload
+): Promise<InteractiveAnswerVerdict> {
+  return postWrongQuestionTutor<InteractiveAnswerVerdict>(token, "interactive-answer", payload);
+}
+
+/** 服务端真实沙箱：编译 + 运行 + 输出比对判分（编程练习 / 错题重做共用） */
+export interface CodeRunPayload {
+  source: string;
+  language: "cpp" | "python";
+  stdin_text?: string;
+  expected_output?: string;
+  compile_timeout_seconds?: number;
+  run_timeout_seconds?: number;
+}
+
+export interface CodeRunResultPayload {
+  verdict: "accepted" | "wrong_answer" | "compile_error" | "runtime_error" | "timeout";
+  passed: boolean;
+  stdout: string;
+  stderr: string;
+  compile_output: string;
+  exit_code: number | null;
+  execution_ms: number;
+  expected_output: string;
+  server_verified: boolean;
+  message: string;
+}
+
+export async function runCodeSubmission(
+  token: string | undefined,
+  courseId: number,
+  payload: CodeRunPayload,
+  timeoutMs = 45000
+): Promise<CodeRunResultPayload> {
+  const controller = new AbortController();
+  const timeoutId = globalThis.setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(`/api/courses/${courseId}/code/run`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders(token) },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+    if (!response.ok) {
+      throw await apiError(response, "服务端代码运行失败");
+    }
+    return response.json();
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new Error("服务端代码运行超时，请稍后重试");
+    }
+    throw error;
+  } finally {
+    globalThis.clearTimeout(timeoutId);
   }
 }

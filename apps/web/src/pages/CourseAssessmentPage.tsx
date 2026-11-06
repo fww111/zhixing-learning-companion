@@ -15,6 +15,8 @@ import {
   type AssessmentDimensionCard
 } from "./courseAssessmentDashboardModel";
 import { buildWrongQuestionBookModel } from "./courseWrongQuestionBookModel";
+import { buildAssessmentTrend } from "./courseAssessmentDashboardModel";
+import { MasteryDistributionChart, MasteryRadarChart, ScoreTrendChart, type MasterySlice } from "../components/MasteryCharts";
 
 const masteryLabels: Record<string, string> = {
   not_started: "未学习",
@@ -52,6 +54,14 @@ export function CourseAssessmentPage() {
     () => buildWrongQuestionBookModel({ events, nodes: graph?.nodes ?? [] }),
     [events, graph]
   );
+  const trendPoints = useMemo(() => buildAssessmentTrend(events), [events]);
+  const masterySlices = useMemo<MasterySlice[]>(() => [
+    { key: "not_started", label: "未学习", value: dashboard.masteryCounts["not_started"] ?? 0, color: "#94a3b8" },
+    { key: "severe_weak", label: "严重弱项", value: dashboard.masteryCounts["severe_weak"] ?? 0, color: "#ef4444" },
+    { key: "basic", label: "掌握基础", value: dashboard.masteryCounts["basic"] ?? 0, color: "#f59e0b" },
+    { key: "good", label: "达标良好", value: dashboard.masteryCounts["good"] ?? 0, color: "#84cc16" },
+    { key: "proficient", label: "精通", value: dashboard.masteryCounts["proficient"] ?? 0, color: "#16a34a" }
+  ], [dashboard.masteryCounts]);
 
   async function load() {
     if (!Number.isFinite(numericCourseId)) {
@@ -139,9 +149,19 @@ export function CourseAssessmentPage() {
               <h2>多维评估画像</h2>
               <span>课堂 · 题库 · 编程 · 行为 · 图谱</span>
             </div>
+            <MasteryRadarChart cards={dashboard.dimensionCards} />
             <div className="assessment-dimension-board">
               {dashboard.dimensionCards.map((card) => <DimensionCard card={card} key={card.key} />)}
             </div>
+          </section>
+
+          <section className="panel score-trend-panel">
+            <div className="panel-title">
+              <Activity size={18} />
+              <h2>评估分数趋势</h2>
+              <span>每次课堂测试的综合得分</span>
+            </div>
+            <ScoreTrendChart points={trendPoints} />
           </section>
 
           <section className="panel mastery-distribution-panel">
@@ -149,6 +169,7 @@ export function CourseAssessmentPage() {
               <BarChart3 size={18} />
               <h2>知识图谱掌握颜色分布</h2>
             </div>
+            <MasteryDistributionChart slices={masterySlices} />
             <div className="assessment-mastery-grid">
               {Object.entries(masteryLabels).map(([status, label]) => (
                 <article className={`mastery-distribution-card mastery-${status}`} key={status}>
