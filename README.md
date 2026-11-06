@@ -27,10 +27,10 @@
         │  平台知识库（教材语料语义检索）   │  MaaS：DeepSeek-V4 系 + GLM-5（校验/辩论双模型）
         │  MCP 调用                        │  效果评估（正确性/幻觉评估器）
         ▼
-本仓库业务层（MCP Server 三件套，streamableHttp）
- ├─ profile-server     画像持久化 / 访谈记录 / 画像随学随新事件
- ├─ graph-server       Neo4j 知识图谱约束导出 / MySQL 原文证据回表（防幻觉的最终证据源）
- └─ assessment-server  综合评估 / 掌握度 / 学习路径规划 / 错题归档
+本仓库业务层（统一单端口 MCP Server，stateless Streamable HTTP，17 个工具）
+ ├─ profile     画像持久化 / 访谈记录 / 画像随学随新事件（8 个工具）
+ ├─ graph       Neo4j 知识图谱约束导出 / MySQL 原文证据回表（防幻觉的最终证据源，4 个工具）
+ └─ assessment  综合评估 / 掌握度 / 学习路径规划 / 错题归档（5 个工具）
         │
         ▼
 FastAPI 业务 API（JWT 鉴权、材料解析、学习事件） + MySQL + Neo4j + OpenMAIC 标准课堂
@@ -47,7 +47,7 @@ FastAPI 业务 API（JWT 鉴权、材料解析、学习事件） + MySQL + Neo4j
 | 前端 | React 19 + Vite + TypeScript + React Router |
 | 智能体编排 | 华为云 AgentArts 低代码工作流（并行聚合 + 反思精炼循环 + 双模型辩论） |
 | 业务服务 | FastAPI + SQLAlchemy（JWT 鉴权） |
-| MCP | 官方 Python SDK，三个业务 Server（apps/mcp，uv 管理） |
+| MCP | 官方 Python SDK FastMCP，单端口 stateless Streamable HTTP（17 工具 + `/ping`，apps/mcp，uv 管理） |
 | 数据 | MySQL（业务/原文 chunk）+ Neo4j（课程知识图谱，user_id + course_id 隔离） |
 | 检索 | AgentArts 平台知识库语义检索 + 本地分块预设（general/qa/book）+ 检索质量评估闭环（recall/f1@k、坏例分析） |
 | 课堂 | OpenMAIC 多智能体互动课堂（3D 可视化/仿真/在线编程） |
@@ -91,16 +91,15 @@ uv run python scripts/seed_cpp_course.py --dry-run   # 校验语料与图谱对�
 uv run python scripts/seed_cpp_course.py             # 写入 MySQL + Neo4j（需 .env 提供 DATABASE_URL/NEO4J_*）
 ```
 
-### 4. 启动 MCP Server 三件套（供 AgentArts 工作流调用）
+### 4. 启动 MCP Server（供 AgentArts 工作流调用）
 
 ```bash
 cd apps/mcp
-uv run python -m mcp_servers.profile_server      # http://0.0.0.0:8100/mcp
-uv run python -m mcp_servers.graph_server        # http://0.0.0.0:8101/mcp
-uv run python -m mcp_servers.assessment_server   # http://0.0.0.0:8102/mcp
+PORT=8080 uv run python -m mcp_servers.server   # POST /mcp（17 个工具）+ GET /ping
+uv run python scripts/protocol_smoke.py          # 本地协议自测，6/6 通过，无需云服务器
 ```
 
-Docker 一键部署见 [apps/mcp/README.md](apps/mcp/README.md)。
+`MCP_SERVER=profile|graph|assessment` 可只启动一组工具做本地调试。云端按 AgentArts 运行时契约部署（ARM64 镜像 → 同区域 SWR → 入栈协议 MCP），详见 [apps/mcp/README.md](apps/mcp/README.md) 与 [06 技术核查与打磨报告](docs/agentarts/06-技术核查与打磨报告.md)。
 
 ### 5. 体验学习状态感知
 
@@ -111,7 +110,8 @@ Docker 一键部署见 [apps/mcp/README.md](apps/mcp/README.md)。
 ```bash
 cd apps/api && pytest tests -q                       # 后端（含分块预设、KB 检索评估闭环）
 cd apps/web && npm run test:models && npm run build  # 前端模型单测 + tsc 构建
-cd apps/mcp && uv run pytest -q                      # MCP Server 冒烟
+cd apps/mcp && uv run pytest -q                      # MCP Server 单元测试（11 项）
+cd apps/mcp && uv run python scripts/protocol_smoke.py  # MCP 协议端到端自测（6 项）
 ```
 
 ## 目录结构
@@ -119,9 +119,9 @@ cd apps/mcp && uv run pytest -q                      # MCP Server 冒烟
 ```text
 apps/api        FastAPI 后端（画像/材料解析/知识图谱/路径/评估/辅导/KB 检索评估）
 apps/web        React 前端（学习工作台、全局辅导窗、学习状态感知悬浮、Agent 协作轨迹）
-apps/mcp        MCP Server 三件套 + 课程种子/语料校验/提示词实测脚本
+apps/mcp        统一单端口 MCP Server + 协议自测 + 课程种子/语料校验/提示词实测脚本
 data/seed       《C++算法学习》教材语料与知识图谱种子
-docs/agentarts  参赛设计方案：场景与架构 / 平台搭建蓝图 / MCP 契约 / 提示词资产包 / 技术借鉴
+docs/agentarts  参赛设计方案：场景与架构 / 平台搭建蓝图 / MCP 契约 / 提示词资产包 / 技术借鉴 / 技术核查报告
 docs            技术方案、部署、测试、PRD、设计稿
 OpenMAIC-main   OpenMAIC 标准课堂（开源，见下方致谢）
 ```
@@ -135,6 +135,7 @@ OpenMAIC-main   OpenMAIC 标准课堂（开源，见下方致谢）
 | [03 MCP 服务接口契约](docs/agentarts/03-MCP服务接口契约.md) | 17 个 MCP 工具的参数、返回、错误约定、Schema |
 | [04 提示词资产包](docs/agentarts/04-提示词资产包.md) | 工作流各节点可直接粘贴的提示词与模型档位路由实测结论 |
 | [05 技术借鉴与增强](docs/agentarts/05-技术借鉴与增强.md) | 分块预设体系与检索评估闭环的设计来源 |
+| [06 技术核查与打磨报告](docs/agentarts/06-技术核查与打磨报告.md) | 官方文档逐条核实、MCP 运行时契约、本地协议验证结果、剩余技术债 |
 
 ## 开源与 AI 辅助说明
 

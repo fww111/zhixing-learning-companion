@@ -133,7 +133,7 @@ export function CoursesPage() {
       setError("");
       const courseProfile = await getMyProfile(token, course.id);
       setProfile(courseProfile, course.id);
-      navigate(courseProfile ? `/courses/${course.id}/knowledge-base` : `/courses/${course.id}/profile/interview`);
+      navigate(courseProfile ? `/courses/${course.id}/today` : `/courses/${course.id}/profile/interview`);
     } catch (caught) {
       if (handleAuthError(caught)) {
         navigate("/auth", { replace: true });
@@ -223,19 +223,15 @@ export function CoursesPage() {
         <div className="kb-course-actions">
           <button className="primary-action" onClick={() => void enterCourse(course)} type="button">
             <ArrowRight size={15} />
-            进入课程
+            进入学习
           </button>
           <button className="secondary-action" disabled={isCurrentCourse} onClick={() => setAsCurrentCourse(course)} type="button">
             <CheckCircle2 size={15} />
             {isCurrentCourse ? "当前课程" : "设为当前"}
           </button>
-          <button className="secondary-action" onClick={() => goToCoursePage(course, "knowledge-base")} type="button">
+          <button className="secondary-action" onClick={() => goToCoursePage(course, "knowledge-base")} type="button" aria-label="打开课程知识库">
             <FileUp size={15} />
             知识库
-          </button>
-          <button className="secondary-action" onClick={() => goToCoursePage(course, "learning-path")} type="button">
-            <Route size={15} />
-            路径
           </button>
         </div>
       </article>
@@ -247,8 +243,8 @@ export function CoursesPage() {
       <section className="kb-preview-hero">
         <div>
           <span className="eyebrow">COURSE CENTER</span>
-          <h2>课程知识库</h2>
-          <p>先选择或创建课程，再进入该课程专属的学生画像、知识库、知识图谱、学习路径与评估闭环。</p>
+          <h2>选择你的课程</h2>
+          <p>每门课都有独立的画像、知识库、图谱与学习路径。进入课程后，从「今日学习」开始你的学习旅程。</p>
           <div className="kb-preview-actions">
             <button className="primary-action compact-button" onClick={() => setShowCreateForm((value) => !value)} type="button">
               <Plus size={16} />

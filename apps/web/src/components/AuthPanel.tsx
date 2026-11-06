@@ -46,15 +46,15 @@ export function AuthPanel({ onAuthenticated }: AuthPanelProps) {
     <main className="auth-shell">
       <section className="auth-hero-panel">
         <div className="auth-brand-row">
-          <span className="brand-mark">AI</span>
+          <span className="brand-mark">知行</span>
           <div>
-            <strong>智学引擎</strong>
-            <span>Personalized Learning Agents</span>
+            <strong>知行学习伙伴</strong>
+            <span>Zhixing Learning Companion · 多智能体个性化学习引擎</span>
           </div>
         </div>
         <div>
-          <h1>把课程资料转成可学习、可评估、可动态调整的个人学习系统</h1>
-          <p>登录后系统会先判断是否已有学生画像；没有画像时进入对话式画像构建，已有画像则进入课程知识库与学习路径工作台。</p>
+          <h1>把课程资料变成会看、会说、会因材施教的 AI 学习伙伴</h1>
+          <p>对话构建 14 维学生画像，多智能体协作生成可溯源的学习资源；学到哪、卡在哪、下一步学什么，系统都替你安排好。</p>
         </div>
         <div className="auth-process-list">
           {processStages.map((stage, index) => {

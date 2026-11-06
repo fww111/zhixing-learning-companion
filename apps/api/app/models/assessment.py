@@ -40,6 +40,9 @@ class CodeAttempt(BaseModel):
     actual_output: str = ""
     passed: bool = False
     attempts: int = 1
+    # 服务端沙箱判分结论（accepted/wrong_answer/compile_error/runtime_error/timeout），
+    # 由 /api/courses/{id}/code/run 返回并随评估提交回传，优先于前端自报结果
+    server_verdict: str | None = None
 
 
 class ComprehensiveAssessmentSubmit(BaseModel):

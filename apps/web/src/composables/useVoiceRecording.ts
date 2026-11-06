@@ -84,6 +84,8 @@ export function useVoiceRecording(options?: UseVoiceRecordingOptions) {
   const startedAtRef = useRef(0);
   const timerRef = useRef<number | null>(null);
   const stopResolverRef = useRef<((result: VoiceRecordingResult) => void) | null>(null);
+  /** getUserMedia 等待授权期间为 true，防止连点 start 造成并发采集与流泄漏 */
+  const startingRef = useRef(false);
 
   const clearTimer = useCallback(() => {
     if (timerRef.current !== null) {
@@ -107,7 +109,8 @@ export function useVoiceRecording(options?: UseVoiceRecordingOptions) {
       setStatus({ ...IDLE_STATUS, state: "error", error: message });
       throw new Error(message);
     }
-    if (recorderRef.current?.state === "recording") return;
+    if (startingRef.current || recorderRef.current?.state === "recording") return;
+    startingRef.current = true;
 
     setStatus({ ...IDLE_STATUS, state: "recording", isRecording: true });
     chunksRef.current = [];
@@ -154,6 +157,7 @@ export function useVoiceRecording(options?: UseVoiceRecordingOptions) {
 
       startedAtRef.current = performance.now();
       recorder.start();
+      startingRef.current = false;
       timerRef.current = window.setInterval(() => {
         const elapsed = performance.now() - startedAtRef.current;
         setStatus((prev) => ({ ...prev, durationMs: Math.round(elapsed) }));
@@ -162,6 +166,7 @@ export function useVoiceRecording(options?: UseVoiceRecordingOptions) {
         }
       }, 200);
     } catch (error) {
+      startingRef.current = false;
       const message = describeError(error);
       clearTimer();
       releaseStream();
@@ -195,6 +200,7 @@ export function useVoiceRecording(options?: UseVoiceRecordingOptions) {
   const reset = useCallback(() => {
     clearTimer();
     releaseStream();
+    startingRef.current = false;
     recorderRef.current = null;
     chunksRef.current = [];
     setStatus(IDLE_STATUS);

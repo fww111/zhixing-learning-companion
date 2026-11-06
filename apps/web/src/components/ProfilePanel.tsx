@@ -20,6 +20,7 @@ import {
   type ProfileTagGroup,
   type ProfileTimelineItem
 } from "./profileVisualizationModel";
+import { MasteryRadarChart } from "./MasteryCharts";
 
 interface ProfilePanelProps {
   profile?: StudentProfile;
@@ -162,7 +163,6 @@ function MetricCard({ metric }: { metric: ProfileMetric }) {
 }
 
 function RadarCard({ axes }: { axes: ProfileRadarAxis[] }) {
-  const points = radarPoints(axes);
   return (
     <article className="profile-visual-card profile-radar-card">
       <div className="profile-card-title">
@@ -170,20 +170,15 @@ function RadarCard({ axes }: { axes: ProfileRadarAxis[] }) {
         <strong>六维能力画像</strong>
       </div>
       <div className="profile-radar-layout">
-        <svg className="profile-radar-svg" viewBox="0 0 220 220" role="img" aria-label="学生画像六维雷达图">
-          {[30, 55, 80].map((radius) => (
-            <polygon key={radius} points={radarGridPoints(radius)} className="profile-radar-grid" />
-          ))}
-          {axes.map((axis, index) => {
-            const [x, y] = radarCoordinate(index, 86);
-            return <line key={axis.label} x1="110" y1="110" x2={x} y2={y} className="profile-radar-axis" />;
-          })}
-          <polygon points={points} className="profile-radar-area" />
-          {axes.map((axis, index) => {
-            const [x, y] = radarCoordinate(index, 86 * (axis.score / 100));
-            return <circle key={axis.label} cx={x} cy={y} r="4" className="profile-radar-dot" />;
-          })}
-        </svg>
+        <MasteryRadarChart
+          cards={axes.map((axis) => ({
+            key: axis.label,
+            label: axis.label,
+            score: axis.score,
+            detail: axis.description,
+            tone: "blue" as const
+          }))}
+        />
         <div className="profile-radar-legend">
           {axes.map((axis) => (
             <div key={axis.label}>

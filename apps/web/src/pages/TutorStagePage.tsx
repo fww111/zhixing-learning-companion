@@ -93,15 +93,39 @@ export function TutorStagePage() {
     });
   }
 
-  function speak(text: string) {
-    if ((!ttsEnabled && !voiceConversation) || typeof window.speechSynthesis === "undefined") return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(
-      text.replace(/[#*`>\-|]/g, "").replace(/chunk#\d+/g, "").slice(0, 600)
-    );
-    utterance.lang = "zh-CN";
-    utterance.rate = 1.05;
-    window.speechSynthesis.speak(utterance);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  function stopSpeak(): void {
+    audioRef.current?.pause();
+    audioRef.current = null;
+    window.speechSynthesis?.cancel();
+  }
+
+  /** 真人音色朗读：后端 edge-tts 合成 mp3（Natural neural voice），支持打断 */
+  async function speak(text: string): Promise<void> {
+    if ((!ttsEnabled && !voiceConversation) || !text.trim()) return;
+    const clean = text.replace(/[#*`>\-|]/g, " ").replace(/chunk#\d+/g, "教材依据").slice(0, 1200);
+    stopSpeak();
+    try {
+      // 优先：后端 edge-tts 真人神经网络音色
+      const res = await fetch("/api/tts/speak", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ text: clean })
+      });
+      if (!res.ok) throw new Error("edge tts unavailable");
+      const blob = await res.blob();
+      const audio = new Audio(URL.createObjectURL(blob));
+      audioRef.current = audio;
+      await audio.play();
+    } catch {
+      // 降级：edge-tts 不可用（网络/服务）时回退浏览器合成音，保证有声音
+      if (typeof window.speechSynthesis === "undefined") return;
+      const utterance = new SpeechSynthesisUtterance(clean.replace(/教材依据/g, "").slice(0, 500));
+      utterance.lang = "zh-CN";
+      utterance.rate = 1.05;
+      window.speechSynthesis.speak(utterance);
+    }
   }
 
   async function sendMessage(content: string, imageAttachments: TutorAttachmentDraft[] = []) {
@@ -255,7 +279,7 @@ export function TutorStagePage() {
     };
     recognitionRef.current = recognition;
     try {
-      window.speechSynthesis?.cancel();   // 用户开口即打断 AI 朗读（自然对话体验）
+      stopSpeak();   // 用户开口即打断 AI 朗读（自然对话体验）
       recognition.start();
       setListening(true);
       setNotice(voiceConversation ? "语音对话中：说完一句自动发送，AI 会开口回答。" : "正在听写，请说出你的问题。");
@@ -290,7 +314,7 @@ export function TutorStagePage() {
                 if (!next) {
                   recognitionRef.current?.stop();
                   setListening(false);
-                  window.speechSynthesis?.cancel();
+                  stopSpeak();
                 } else {
                   setTtsEnabled(true);
                   window.setTimeout(() => handleVoiceInput(), 100);
@@ -307,7 +331,7 @@ export function TutorStagePage() {
             className="secondary-action compact-button"
             onClick={() => {
               setTtsEnabled((value) => !value);
-              if (ttsEnabled) window.speechSynthesis?.cancel();
+              if (ttsEnabled) stopSpeak();
             }}
             type="button"
           >

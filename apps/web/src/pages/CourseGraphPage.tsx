@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Route, Upload } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getCourse, type Course } from "../api/client";
+import { ErrorBlock, LoadingBlock } from "../components/StateViews";
 import { KnowledgeGraphPanel } from "../components/KnowledgeGraphPanel";
 import { useAuth } from "../state/auth";
 
@@ -33,11 +34,11 @@ export function CourseGraphPage() {
   }, [numericCourseId, token]);
 
   if (loading) {
-    return <div className="route-loading">正在加载知识图谱</div>;
+    return <LoadingBlock label="正在加载课程与知识图谱…" />;
   }
 
   if (!course) {
-    return <div className="error">{error || "课程不存在"}</div>;
+    return <ErrorBlock message={error || "课程不存在"} onRetry={() => { setError(""); setLoading(true); getCourse(token, numericCourseId).then(setCourse).catch((caught) => setError(caught instanceof Error ? caught.message : "加载课程失败")).finally(() => setLoading(false)); }} />;
   }
 
   return (

@@ -215,6 +215,28 @@ function wrongCodeItem(event: LearningProfileEvent, attempt: Record<string, unkn
   };
 }
 
+export interface AssessmentTrendPoint {
+  date: string;
+  label: string;
+  score: number;
+  topic: string;
+}
+
+/** 历次综合评估分数趋势（按时间正序），用于仪表盘趋势折线图。 */
+export function buildAssessmentTrend(events: LearningProfileEvent[]): AssessmentTrendPoint[] {
+  return events
+    .filter((event) => event.event_type === "assessment_submitted")
+    .map((event) => ({
+      date: event.created_at.slice(0, 10),
+      label: event.created_at.slice(5, 16).replace("T", " "),
+      score: percent(event.score ?? numberValue(objectValue(event.event_payload), "final_score")),
+      topic: event.topic
+    }))
+    .filter((point) => point.score > 0)
+    .sort((left, right) => left.date.localeCompare(right.date))
+    .slice(-12);
+}
+
 function latestEvent(events: LearningProfileEvent[]): LearningProfileEvent | undefined {
   return [...events]
     .filter((event) => event.event_type === "assessment_submitted")

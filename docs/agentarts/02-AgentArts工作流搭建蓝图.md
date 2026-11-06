@@ -5,13 +5,11 @@
 
 ## 0. 前置准备
 
-1. 开通 AgentArts 服务，创建工作空间（低代码开发）。
-2. MaaS 接入：开通 ModelArts Studio，部署 `DeepSeek-V4-Pro` 与 `GLM-5`，在 AgentArts「模型」中完成授权，命名 `deepseek-v4-pro`、`glm-5`。
-3. 部署三个 MCP Server（见《03-MCP服务接口契约》），得到三个 streamableHttp 地址：
-   - `http://<host>:8100/mcp` profile-server
-   - `http://<host>:8101/mcp` graph-server
-   - `http://<host>:8102/mcp` assessment-server
-4. AgentArts「MCP」→ 自定义接入，逐一登记三个 MCP 服务并调试连通；「插件」→ 基于 API 创建 OpenMAIC 插件（`POST {OPENMAIC_BASE_URL}/api/generate-classroom`，Body 为 JSON）。
+1. 申请 **AgentArts 公测**并开通体验版（官方：目前仅公测、仅体验版可开通；服务仅在**西南-贵阳一**区域提供），创建工作空间（低代码开发）。
+2. MaaS 接入：开通后赠送 **2,000,000 Tokens** 免费额度，可用于调测与试运行；**只要通过 API 调用智能体，或免费额度耗尽，就必须先**在「资产广场 > 模型」开通模型、在 MaaS 控制台（同区域）创建 API Key，并回到 AgentArts 完成模型鉴权。模型 ID **以控制台实际显示为准**，本文档下文用 `主推理模型` / `校验辩论模型` 代称，不写死版本号（官方最佳实践示例出现 GLM-5.3、Kimi-K2.6）。
+3. 部署 MCP Server（见《03-MCP服务接口契约》§5）：构建 **ARM64 镜像** → 推到与 AgentArts 同区域的 SWR → 「智能体运行时」以**入栈协议 MCP**、端口 8080、健康检查 `/ping` 部署，得到**一个**公网访问域名 `https://<runtime-endpoint>`（`POST /mcp` 上集中 17 个工具）。本地先跑 `uv run python scripts/protocol_smoke.py` 验收。
+   > 说明：早期设计的 8100/8101/8102 三端口方案不适用于运行时（一个容器只探一个端口），已合并为单端口入口；运行时部署由平台托管，**不需要自购 ECS**。
+4. AgentArts「我的资产 > MCP > 自定义接入」→ 选 **Streamable HTTP** → 填上述运行时访问域名 → 调试连通（只需登记 **1 个** MCP 服务）；「插件」→ 基于 API 创建 OpenMAIC 插件（`POST {OPENMAIC_BASE_URL}/api/generate-classroom`，Body 为 JSON）。
 
 ## 1. 知识库构建
 
@@ -28,7 +26,7 @@
 「多智能体应用」→ 新建 `zhixing-learning-companion`。
 
 多 Agent 控制器配置：
-- 主控模型：`deepseek-v4-pro`
+- 主控模型：`主推理模型`
 - 意图分类提示词（四类）：
   1. `profile_interview`：构建/更新学习画像、回答访谈问题
   2. `resource_learning`：学习某个知识点、生成学习资源
@@ -77,11 +75,11 @@
  │    └─ reading    拓展阅读
  │
  ├─ 反思精炼循环（最多 2 轮）:
- │    大模型节点 fact_check（deepseek-v4-pro）
+ │    大模型节点 fact_check（主推理模型）
  │      提示词: 逐条判断生成内容是否被证据原文支撑，输出 violations[]
- │    大模型节点 pedagogy_check（glm-5）
+ │    大模型节点 pedagogy_check（校验辩论模型）
  │      提示词: 难度/表达/资源形态是否匹配画像，输出 adjustments[]
- │    大模型节点 debate（deepseek-v4-pro vs glm-5 结论合并）
+ │    大模型节点 debate（主推理模型 vs 校验辩论模型 结论合并）
  │      输出: conflicts[], risk_level
  │    大模型节点 decision
  │      输出枚举: accepted | retrieve_more | revise
@@ -101,7 +99,7 @@
 
 ## 5. 子应用 C：智能辅导子智能体（单智能体）
 
-- 类型：单智能体应用（对话型），模型 `deepseek-v4-pro`；传图场景走多模态模型。
+- 类型：单智能体应用（对话型），模型 `主推理模型`；传图场景走多模态模型。
 - 知识库：挂载当前课程知识库（`course_name` → 知识库映射）。
 - 工具：MCP `graph-server.get_node_constraints`（提供知识点上下文）、MCP `graph-server.search_course_chunks`（关键词补充检索）。
 - 提示词要点：回答必须基于课程证据；先直接回答 → 再解释 → 给一个易错点 → 建议下一步练习；证据不足时明确说明并引导学生补充章节信息；不暴露 chunk 原文与内部调试信息。
@@ -134,8 +132,9 @@
 ## 7. 发布配置
 
 1. 多智能体应用 → 发布 → **API 服务**（开启流式 SSE）：得到 `POST /v1/{app_id}/chat/completions` 形态的调用地址与 API Key；Demo 前端通过自有后端代理转发（API Key 不落前端）。
+   > ⚠️ 前置条件：**通过 API 调用智能体必须先完成 MaaS 模型鉴权**（免费额度仅覆盖控制台调测/试运行），否则线上调用直接失败。SSE 事件字段按官方《调用工作流/智能体响应事件详细说明》解析。
 2. 同一应用 → 发布 → **网页应用**：生成可分享 URL，作为无前端兜底演示入口。
-3. 决赛前将 Demo 前端与 MCP Server 部署到华为云 ECS（赛题云资源支持），保证可在线访问。
+3. 决赛前将 Demo 前端部署到赛题提供的云资源，保证可在线访问；MCP Server 已由 AgentArts 运行时托管，无需单独 ECS。
 
 ## 8. 观测与效果评估
 
@@ -147,6 +146,9 @@
 
 ## 9. 验收清单
 
+- [ ] 本地协议自测通过（`scripts/protocol_smoke.py` 6/6、`pytest` 11/11）
+- [ ] 运行时部署探活 `/ping` 成功，云端 `tools/list` 返回 17 个工具（官方 curl 截图留证）
+- [ ] MaaS 模型鉴权完成，API 流式调用可正常返回
 - [ ] 四类意图路由正确（分别用样例问句验证）
 - [ ] 画像访谈 8 轮内生成完整画像，MySQL `student_profiles` 出现记录
 - [ ] 资源生成 6 分支并行输出齐全，辩论/决策轨迹可在观测中回放
