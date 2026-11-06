@@ -1,0 +1,155 @@
+/**
+ * 知行学习伙伴 · 设计令牌 v2
+ * 双面设计：日常态（浅色亲和学院风）× 引擎态（深空智能引擎风，.engine-* / data-theme="dark"）。
+ * 旧变量在 app.css 中 alias 到本文件，新代码一律使用本文件的语义 token。
+ */
+
+:root {
+  /* ---- 品牌 ---- */
+  --brand-500: #6366f1;
+  --brand-600: #4f46e5;
+  --brand-700: #4338ca;
+  --brand-soft: #eef2ff;
+  --brand-softer: #f5f6ff;
+  --brand-contrast: #ffffff;
+
+  /* ---- 表面 ---- */
+  --surface-page: #f4f6fb;
+  --surface-card: #ffffff;
+  --surface-soft: #f8fafc;
+  --surface-muted: #eef2f7;
+  --surface-hover: #f1f5ff;
+  --surface-sunken: #e9edf5;
+
+  /* ---- 文本 ---- */
+  --text-strong: #0f172a;
+  --text-body: #1e293b;
+  --text-soft: #475569;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
+  --text-on-brand: #ffffff;
+
+  /* ---- 描边 ---- */
+  --border-subtle: #e2e8f0;
+  --border-default: #d8dfeb;
+  --border-strong: #cbd5e1;
+  --border-brand: #c7d2fe;
+
+  /* ---- 状态 ---- */
+  --success-500: #22c55e;
+  --success-600: #16a34a;
+  --success-soft: #f0fdf4;
+  --success-border: #bbf7d0;
+  --success-text: #15803d;
+  --warning-500: #f59e0b;
+  --warning-600: #d97706;
+  --warning-soft: #fffbeb;
+  --warning-border: #fde68a;
+  --warning-text: #b45309;
+  --danger-500: #ef4444;
+  --danger-600: #dc2626;
+  --danger-soft: #fef2f2;
+  --danger-border: #fecaca;
+  --danger-text: #b91c1c;
+  --info-500: #0ea5e9;
+  --info-600: #0284c7;
+  --info-soft: #f0f9ff;
+  --info-border: #bae6fd;
+  --info-text: #075985;
+
+  /* ---- 掌握度五态（图谱/路径/评估统一色）---- */
+  --mastery-unlearned: #94a3b8;
+  --mastery-weak: #ef4444;
+  --mastery-basic: #f59e0b;
+  --mastery-good: #84cc16;
+  --mastery-proficient: #16a34a;
+
+  /* ---- 引擎态（多智能体剧场/对话大屏/引擎抽屉）---- */
+  --engine-bg: #0b1020;
+  --engine-bg-soft: #111834;
+  --engine-surface: #151d3b;
+  --engine-surface-raised: #1a2348;
+  --engine-border: #2b3663;
+  --engine-border-glow: rgba(99, 102, 241, 0.55);
+  --engine-text: #e2e8f0;
+  --engine-text-soft: #94a3b8;
+  --engine-accent: #818cf8;
+  --engine-accent-2: #22d3ee;
+  --engine-accent-3: #f472b6;
+  --engine-glow: 0 0 24px rgba(129, 140, 248, 0.35);
+
+  /* ---- 几何与阴影 ---- */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 16px 48px rgba(15, 23, 42, 0.12);
+  --shadow-brand: 0 8px 24px rgba(99, 102, 241, 0.25);
+
+  /* ---- 动效 ---- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --speed-fast: 150ms;
+  --speed-base: 240ms;
+  --speed-slow: 420ms;
+
+  /* ---- 旧 token 别名（平滑过渡；新代码勿再新增引用）---- */
+  --color-background: var(--surface-page);
+  --color-surface: var(--surface-card);
+  --color-surface-soft: var(--surface-soft);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+  --color-primary: var(--text-strong);
+  --color-primary-hover: #1e293b;
+  --color-accent: var(--brand-600);
+  --color-accent-hover: var(--brand-700);
+  --color-text: var(--text-strong);
+  --color-text-soft: var(--text-soft);
+  --color-text-muted: var(--text-muted);
+  --color-success: var(--success-600);
+  --color-warning: var(--warning-500);
+  --color-danger: var(--danger-600);
+}
+
+/* ---- 暗色（演示态/个人偏好）：data-theme="dark" 时全局表面与文本翻转 ---- */
+:root[data-theme="dark"] {
+  --surface-page: #0b1020;
+  --surface-card: #151d3b;
+  --surface-soft: #111834;
+  --surface-muted: #1a2348;
+  --surface-hover: #1c2750;
+  --surface-sunken: #0e1528;
+
+  --text-strong: #f1f5f9;
+  --text-body: #e2e8f0;
+  --text-soft: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-faint: #64748b;
+
+  --border-subtle: #2b3663;
+  --border-default: #31407a;
+  --border-strong: #3d4d8f;
+  --border-brand: #4353a4;
+
+  --brand-soft: #1d2547;
+  --brand-softer: #182042;
+
+  --success-soft: #10291c;
+  --success-border: #1d4433;
+  --success-text: #4ade80;
+  --warning-soft: #2a2110;
+  --warning-border: #4d3b15;
+  --warning-text: #fbbf24;
+  --danger-soft: #2c1212;
+  --danger-border: #55201f;
+  --danger-text: #f87171;
+  --info-soft: #0c2233;
+  --info-border: #17405c;
+  --info-text: #38bdf8;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.55);
+}

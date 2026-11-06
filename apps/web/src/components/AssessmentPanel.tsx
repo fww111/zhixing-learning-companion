@@ -10,6 +10,7 @@ import {
   masteryStatusLabel,
   previewQuizScore
 } from "./assessmentModel";
+import { executeCode } from "./codeExecutionModel";
 import { isInlineCodeRunSuccessful, runInlinePythonLikeCode } from "./postClassroomExperienceModel";
 
 interface AssessmentPanelProps {
@@ -63,6 +64,9 @@ export function AssessmentPanel({
   const [codeOutput, setCodeOutput] = useState("点击运行后，这里会显示浏览器内即时输出。");
   const [codePassed, setCodePassed] = useState(false);
   const [codeAttempts, setCodeAttempts] = useState(0);
+  const [codeRunning, setCodeRunning] = useState(false);
+  const [serverVerdict, setServerVerdict] = useState<string | null>(null);
+  const [offlineRun, setOfflineRun] = useState(false);
   const [report, setReport] = useState<AssessmentReport>();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -84,14 +88,32 @@ export function AssessmentPanel({
   ) : initialScore);
   const percent = percentValue(currentScore);
 
-  function runCode() {
-    const nextOutput = runInlinePythonLikeCode(code);
-    const nextPassed = isInlineCodeRunSuccessful(nextOutput) && codeAttemptMatchesChallenge(codeChallenge.expectedOutput, nextOutput);
-    setCodeOutput(nextOutput);
-    setCodePassed(nextPassed);
+  async function runCode() {
+    if (codeRunning) {
+      return;
+    }
+    setCodeRunning(true);
     setCodeAttempts((current) => current + 1);
-    if (nextPassed) {
-      onCodePassed?.();
+    try {
+      const outcome = await executeCode({
+        token,
+        courseId,
+        source: code,
+        expectedOutput: codeChallenge.expectedOutput
+      });
+      const output = outcome.output;
+      setCodeOutput(output);
+      setServerVerdict(outcome.verdict);
+      setOfflineRun(!outcome.serverVerified);
+      const nextPassed = outcome.serverVerified
+        ? Boolean(outcome.passed)
+        : isInlineCodeRunSuccessful(output) && codeAttemptMatchesChallenge(codeChallenge.expectedOutput, output);
+      setCodePassed(nextPassed);
+      if (nextPassed) {
+        onCodePassed?.();
+      }
+    } finally {
+      setCodeRunning(false);
     }
   }
 
@@ -110,7 +132,8 @@ export function AssessmentPanel({
           expectedOutput: codeChallenge.expectedOutput,
           actualOutput: codeOutput,
           passed: codePassed,
-          attempts: Math.max(1, codeAttempts)
+          attempts: Math.max(1, codeAttempts),
+          serverVerdict
         },
         quizItems,
         courseId,
@@ -196,7 +219,7 @@ export function AssessmentPanel({
               <span>04</span>
               <div>
                 <strong>编程题：用代码验证本节知识点</strong>
-                <small>代码必须在浏览器内运行成功，才会计入评估通过条件</small>
+                <small>代码将提交到服务端沙箱真实编译运行，判分结果可信且计入评估</small>
               </div>
             </div>
             <p className="assessment-code-prompt">{codeChallenge.prompt}</p>
@@ -213,7 +236,7 @@ export function AssessmentPanel({
                       <RefreshCw size={15} />
                       重置
                     </button>
-                    <button className="primary-action compact-button" onClick={runCode} type="button">
+                    <button className="primary-action compact-button" disabled={codeRunning} onClick={runCode} type="button">
                       <PlayCircle size={15} />
                       运行代码
                     </button>
@@ -222,9 +245,18 @@ export function AssessmentPanel({
                 <textarea aria-label="课堂评估编程题编辑器" onChange={(event) => setCode(event.target.value)} value={code} />
               </div>
               <div className="assessment-output-panel">
-                <span>运行输出</span>
+                <span>
+                  运行输出
+                  {serverVerdict ? (
+                    <em className={`sandbox-badge ${serverVerdict === "accepted" ? "ok" : "warn"}`}>
+                      服务端沙箱 · {serverVerdict === "accepted" ? "判分通过" : serverVerdict === "wrong_answer" ? "输出不一致" : serverVerdict === "compile_error" ? "编译失败" : serverVerdict === "timeout" ? "运行超时" : "运行出错"}
+                    </em>
+                  ) : offlineRun ? (
+                    <em className="sandbox-badge offline">离线模拟（后端不可用）</em>
+                  ) : null}
+                </span>
                 <pre>{codeOutput}</pre>
-                <small>{codePassed ? "输出匹配题目要求，已记录为代码实践证据。" : "需要运行并与题目要求的输出一致才算通过。"}</small>
+                <small>{codePassed ? "真实运行判分通过，已记录为代码实践证据。" : "需要真实运行并与题目要求的输出一致才算通过。"}</small>
               </div>
             </div>
           </article>

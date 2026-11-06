@@ -9,6 +9,7 @@ import { CourseWrongQuestionsPage } from "../pages/CourseWrongQuestionsPage";
 import { CoursesPage } from "../pages/CoursesPage";
 import { KnowledgeLearningPage } from "../pages/KnowledgeLearningPage";
 import { ProfileInterviewPage } from "../pages/ProfileInterviewPage";
+import { TodayPage } from "../pages/TodayPage";
 import { TutorStagePage } from "../pages/TutorStagePage";
 import { AuthProvider } from "../state/auth";
 import { RedirectBySession, RequireAuth, RequireCourseProfile } from "./guards";
@@ -26,6 +27,7 @@ export function AppRouter() {
                 <Route element={<CoursesPage />} path="/courses" />
                 <Route element={<ProfileInterviewPage />} path="/courses/:courseId/profile/interview" />
                 <Route element={<RequireCourseProfile />}>
+                <Route element={<TodayPage />} path="/courses/:courseId/today" />
                 <Route element={<CourseKnowledgeBasePage />} path="/courses/:courseId/knowledge-base" />
                 <Route element={<CourseGraphPage />} path="/courses/:courseId/graph" />
                 <Route element={<CourseLearningPathPage />} path="/courses/:courseId/learning-path" />

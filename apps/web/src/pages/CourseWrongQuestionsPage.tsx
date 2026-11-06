@@ -10,7 +10,8 @@ import {
   type KnowledgeGraph,
   type LearningProfileEvent
 } from "../api/client";
-import { runInlinePythonLikeCode } from "../components/postClassroomExperienceModel";
+import { executeCode } from "../components/codeExecutionModel";
+import { WrongQuestionTutorPanel } from "../components/WrongQuestionTutorPanel";
 import { useAuth } from "../state/auth";
 import {
   buildRedoAssessmentPayload,
@@ -179,6 +180,8 @@ function WrongQuestionRedoCard({
   const [actualOutput, setActualOutput] = useState(item.actualOutput || "点击运行后显示本次输出。");
   const [attempts, setAttempts] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [running, setRunning] = useState(false);
+  const [serverVerdict, setServerVerdict] = useState<string | null>(null);
   const [feedback, setFeedback] = useState("");
   const redo: WrongQuestionRedoInput = {
     selectedAnswerIndex,
@@ -186,15 +189,38 @@ function WrongQuestionRedoCard({
     actualOutput,
     attempts: Math.max(1, attempts)
   };
-  const result = evaluateWrongQuestionRedo(item, redo);
+  const result = evaluateWrongQuestionRedo(item, redo, serverVerdict);
   const canSubmit = Boolean(token && !item.resolved && result.passed);
 
-  function runCode() {
-    const output = runInlinePythonLikeCode(code);
-    setActualOutput(output);
-    setAttempts((current) => current + 1);
-    const nextResult = evaluateWrongQuestionRedo(item, { ...redo, actualOutput: output, attempts: attempts + 1 });
-    setFeedback(nextResult.message);
+  async function runCode() {
+    if (running) {
+      return;
+    }
+    setRunning(true);
+    try {
+      const outcome = await executeCode({
+        token,
+        courseId,
+        source: code,
+        expectedOutput: item.expectedOutput || ""
+      });
+      const output = outcome.output;
+      setActualOutput(output);
+      setServerVerdict(outcome.verdict);
+      const nextAttempts = attempts + 1;
+      setAttempts(nextAttempts);
+      const nextResult = evaluateWrongQuestionRedo(item, {
+        ...redo,
+        actualOutput: output,
+        attempts: nextAttempts
+      }, outcome.verdict);
+      const passed = nextResult.passed;
+      setFeedback(
+        `${passed ? "真实运行判分通过" : outcome.message || "运行结果与期望不一致"}${outcome.serverVerified ? "" : "（离线模拟，仅供参考）"}`
+      );
+    } finally {
+      setRunning(false);
+    }
   }
 
   async function submitRedo() {
@@ -208,7 +234,8 @@ function WrongQuestionRedoCard({
         courseId,
         item,
         redo,
-        studentId
+        studentId,
+        serverVerdict
       });
       await submitAssessment(token, payload);
       setFeedback("重做正确，评估结果已写回。");
@@ -239,6 +266,7 @@ function WrongQuestionRedoCard({
             <strong>{item.correctAnswer}</strong>
           </div>
         </div>
+        <WrongQuestionTutorPanel courseId={courseId} item={item} />
       </div>
 
       {!item.resolved ? (
@@ -274,16 +302,23 @@ function WrongQuestionRedoCard({
                       <RotateCcw size={14} />
                       重置
                     </button>
-                    <button className="primary-action compact-button" onClick={runCode} type="button">
+                    <button className="primary-action compact-button" disabled={running} onClick={runCode} type="button">
                       <PlayCircle size={14} />
-                      运行
+                      {running ? "沙箱运行中…" : "运行"}
                     </button>
                   </div>
                 </div>
                 <textarea aria-label="错题重做代码编辑器" onChange={(event) => setCode(event.target.value)} value={code} />
               </div>
               <div className="assessment-output-panel">
-                <span>本次输出</span>
+                <span>
+                  本次输出
+                  {serverVerdict ? (
+                    <em className={`sandbox-badge ${serverVerdict === "accepted" ? "ok" : "warn"}`}>
+                      服务端沙箱 · {serverVerdict === "accepted" ? "判分通过" : serverVerdict === "wrong_answer" ? "输出不一致" : serverVerdict === "compile_error" ? "编译失败" : serverVerdict === "timeout" ? "运行超时" : "运行出错"}
+                    </em>
+                  ) : null}
+                </span>
                 <pre>{actualOutput}</pre>
                 <small>期望输出</small>
                 <pre>{item.expectedOutput || "-"}</pre>

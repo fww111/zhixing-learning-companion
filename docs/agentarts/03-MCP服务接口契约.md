@@ -1,14 +1,15 @@
 # 03 MCP 服务接口契约
 
 > 三个自定义 MCP Server 封装 challengecup 后端（FastAPI + MySQL + Neo4j）的核心业务能力，供 AgentArts 工作流以 MCP 工具方式调用。
-> 协议：MCP streamableHttp（`http://<host>:<port>/mcp`）；实现：官方 Python SDK（FastMCP）。
-> 数据隔离硬约束：所有工具都要求 `user_id + course_id`，服务端校验课程归属，防止跨用户/跨课程读写。
+> 协议：MCP Streamable HTTP，**单端点** `POST http://<host>:<port>/mcp` + 健康检查 `GET /ping`；实现：官方 Python SDK（FastMCP，`stateless_http=True`）。
+> 部署形态：**一个容器一个端口**，17 个工具注册在同一个 FastMCP 实例（`mcp_servers.server`）；旧的 8100/8101/8102 三进程方案不适用于 AgentArts 运行时，详见《06-技术核查与打磨报告》。
+> 数据隔离硬约束：所有工具都要求 `user_id + course_id`，服务端校验课程归属，防止跨用户/跨课程读写（注意：`user_id` 仍是调用方自报参数，存在伪造风险，见《06》§七）。
 
 ## 0. 通用约定
 
 - **返回格式**：所有工具返回 JSON 对象。成功带 `ok: true`；失败带 `ok: false, error_type, message`，不抛未处理异常，便于工作流判断节点消费。
 - **error_type 枚举**：`course_not_found`（课程不存在或不属于该用户）、`profile_not_found`、`graph_missing`（Neo4j 无该课程子图）、`validation_error`（参数不合法）、`storage_error`（MySQL/Neo4j 不可用）。
-- **安全**：可选环境变量 `MCP_ACCESS_TOKEN`，设置后所有请求必须携带 `Authorization: Bearer <token>`。
+- **安全**：`MCP_AUTH_MODE=platform`（默认）时鉴权由 AgentArts 运行时网关负责，本服务不重复校验（否则平台 apikey 会被 401）；独立部署时用 `MCP_AUTH_MODE=local` + `MCP_ACCESS_TOKEN` 要求 `Authorization: Bearer <token>`，`/ping` 始终放行。
 - **复用**：三个 Server 直接复用 `apps/api/app` 的 SQLAlchemy 模型与服务（单一数据源，避免逻辑漂移）；连接配置读取仓库根目录 `.env`（`DATABASE_URL`、`NEO4J_URI/USER/PASSWORD`）。
 
 ## 1. profile-server（端口 8100）
@@ -95,24 +96,67 @@
 }
 ```
 
-## 5. 部署
+## 5. 部署（按 AgentArts 运行时契约）
 
-### 5.1 本地运行（uv）
+> 官方依据：《MCP》`agentarts_10_069`、《制作MCP Server镜像》`agentarts_10_080`、《什么是MCP Server部署》`agentarts_10_126`、《调用MCP服务》`agentarts_10_067`。逐条核对见《06-技术核查与打磨报告》。
+
+### 5.1 硬约束清单
+
+| 项 | 要求 |
+| --- | --- |
+| 传输 | Streamable HTTP，**`stateless_http=True`**，单端点 `POST /mcp` |
+| 会话头 | 平台自动注入 `Mcp-Session-Id`，服务端必须接受、不得拒绝 |
+| Accept | 客户端必须带 `Accept: application/json, text/event-stream`，否则 406 |
+| 健康检查 | `GET /ping` → `{"status":"ok"}`，且不受鉴权保护 |
+| Host | 网关 Host 非 localhost；需禁用 DNS rebinding 保护并放开 Host 校验 |
+| 端口 | 用 `PORT` 对齐控制台配置（镜像默认 8080；官方另有 8000 的表述，以控制台为准） |
+| 鉴权 | 运行时调用带平台签发的 `Authorization: Bearer {apikey}`，本服务用 `MCP_AUTH_MODE=platform` 不重复校验 |
+| 容器 | `0.0.0.0` + **ARM64 镜像**，SWR 组织须与 AgentArts 同区域（cn-southwest-2 / 西南-贵阳一） |
+| 公网 | 「自定义接入 MCP」要求公网可访问；运行时部署给出的访问域名即可满足，**无需自购 ECS** |
+
+### 5.2 本地运行（单端口统一入口）
 
 ```bash
 cd apps/mcp
 uv sync
-# 需要仓库根目录 .env 提供 DATABASE_URL / NEO4J_*；未配置 MCP_ACCESS_TOKEN 时无鉴权
-uv run python -m mcp_servers.profile_server      # 0.0.0.0:8100
-uv run python -m mcp_servers.graph_server        # 0.0.0.0:8101
-uv run python -m mcp_servers.assessment_server   # 0.0.0.0:8102
+PORT=8080 uv run python -m mcp_servers.server     # POST /mcp + GET /ping
 ```
 
-### 5.2 Docker（用于部署到华为云/AgentArts 运行时）
+`MCP_SERVER=all`（默认）暴露全部 17 个工具；也可设为 `profile` / `graph` / `assessment` 只暴露一组（本地调试用）。
+三个独立模块 `mcp_servers.{profile,graph,assessment}_server` 仍保留，可直接 `python -m` 启动（默认 8100/8101/8102），但**不用于云端部署**。
+
+### 5.3 本地协议自测（无需云服务器）
 
 ```bash
-docker build -t zhixing-mcp-servers -f apps/mcp/Dockerfile .
-docker run -d --env-file .env -p 8100:8100 -p 8101:8101 -p 8102:8102 zhixing-mcp-servers
+cd apps/mcp
+uv run python scripts/protocol_smoke.py     # 6 项检查：/ping、initialize、tools/list=17、tools/call、跨用户隔离、406
+uv run pytest -q                            # 11 个既有单测
 ```
 
-单镜像同时暴露三个端口；在 AgentArts 高代码运行时或 ECS 上部署后，将三个 `/mcp` 地址登记到平台 MCP 列表并完成连通性调试。
+脚本启动真实子进程、模拟网关请求头、连临时 sqlite 执行真实工具，已实测 6/6 通过。
+
+### 5.4 云端部署（AgentArts 运行时）
+
+```bash
+# 构建上下文为仓库根目录；官方要求 ARM64
+docker build --platform linux/arm64 -f apps/mcp/Dockerfile -t zhixing-mcp:latest .
+docker run -d --env-file .env -p 8080:8080 zhixing-mcp:latest     # 本地镜像验收
+
+# 推送到同区域 SWR
+docker tag zhixing-mcp:latest swr.cn-southwest-2.myhuaweicloud.com/<组织>/zhixing-mcp:latest
+docker push swr.cn-southwest-2.myhuaweicloud.com/<组织>/zhixing-mcp:latest
+```
+
+控制台「智能体运行时」→ 部署，**入栈协议选 MCP**、端口 8080、健康检查 `/ping` → 得到访问域名。
+云上调测（官方 curl 形态）：
+
+```bash
+curl -X POST https://${RUNTIME_ENDPOINT} \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -H 'X-Hw-Agentarts-Session-Id: {session}' \
+  -H 'Authorization: Bearer {apikey}' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+```
+
+最后在「我的资产 > MCP > 自定义接入」选 **Streamable HTTP**，填该运行时访问域名，调试通过后挂到工作流 MCP 节点（工作流模式下 MCP 参数是固定值或引用上游变量，务必配置异常分支）。

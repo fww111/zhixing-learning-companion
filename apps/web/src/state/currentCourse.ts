@@ -13,6 +13,9 @@ export interface CourseNavigationTargets {
   graphTarget: string;
   pathTarget: string;
   assessmentTarget: string;
+  todayTarget: string;
+  wrongQuestionsTarget: string;
+  tutorStageTarget: string;
 }
 
 export function readCurrentCourseId(storage: Pick<Storage, "getItem"> = localStorage): number | undefined {
@@ -33,7 +36,10 @@ export function currentCourseNavigationTargets(courseId?: number): CourseNavigat
     profileTarget: courseId ? `/courses/${courseId}/profile/interview` : "/courses",
     graphTarget: courseId ? `/courses/${courseId}/graph` : "/courses",
     pathTarget: courseId ? `/courses/${courseId}/learning-path` : "/courses",
-    assessmentTarget: courseId ? `/courses/${courseId}/assessment` : "/courses"
+    assessmentTarget: courseId ? `/courses/${courseId}/assessment` : "/courses",
+    todayTarget: courseId ? `/courses/${courseId}/today` : "/courses",
+    wrongQuestionsTarget: courseId ? `/courses/${courseId}/assessment/wrong-questions` : "/courses",
+    tutorStageTarget: courseId ? `/courses/${courseId}/tutor-stage` : "/courses"
   };
 }
 

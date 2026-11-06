@@ -1,4 +1,4 @@
-import { appNavOrder, navItemState } from "./appNavigationModel.js";
+import { appNavGroups, appNavOrder, navItemState } from "./appNavigationModel.js";
 
 function assert(condition: boolean, message: string) {
   if (!condition) {
@@ -27,16 +27,24 @@ test("learning path and assessment navigation are independent", () => {
   assert(navItemState("assessment", assessmentUrl, "", false) === "active", "assessment should be active on assessment route");
 });
 
-test("wrong-question book route belongs to assessment navigation", () => {
+test("wrong-question book route belongs to wrong_questions navigation without double highlight", () => {
   assert(
-    navItemState("assessment", "/courses/15/assessment/wrong-questions", "", false) === "active",
-    "wrong-question book should keep assessment navigation active"
+    navItemState("wrong_questions", "/courses/15/assessment/wrong-questions", "", false) === "active",
+    "wrong-question book should highlight its own navigation entry"
+  );
+  assert(
+    navItemState("assessment", "/courses/15/assessment/wrong-questions", "", false) === "",
+    "assessment should not double-highlight on wrong-question route"
   );
 });
 
-test("course knowledge base appears before student profile in the sidebar", () => {
-  assert(appNavOrder[0] === "courses", "course knowledge base should be the first workflow navigation item");
-  assert(appNavOrder[1] === "profile", "student profile should appear after course knowledge base");
+test("student journey navigation groups: today first, then growth, then course", () => {
+  assert(appNavGroups[0].key === "learning", "learning group comes first");
+  assert(appNavGroups[0].items[0] === "today", "today dashboard is the first workflow entry");
+  assert(appNavGroups[1].key === "growth", "growth group comes second");
+  assert(appNavGroups[2].key === "course", "course group comes last");
+  assert(appNavOrder.includes("wrong_questions"), "wrong-question book has its own entry");
+  assert(appNavOrder.includes("tutor_stage"), "tutor stage has its own entry");
 });
 
 test("course knowledge-base route marks course navigation active", () => {
@@ -50,4 +58,10 @@ test("disabled navigation takes precedence over active state", () => {
 
 test("course-scoped profile route marks profile navigation active", () => {
   assert(navItemState("profile", "/courses/15/profile/interview", "", false) === "active", "course profile interview should belong to profile navigation");
+});
+
+test("today and tutor-stage routes highlight their own entries", () => {
+  assert(navItemState("today", "/courses/15/today", "", false) === "active", "today route highlights today entry");
+  assert(navItemState("tutor_stage", "/courses/15/tutor-stage", "", false) === "active", "tutor stage route highlights its entry");
+  assert(navItemState("today", "/courses/15/learning-path", "", false) === "", "today stays quiet on other routes");
 });

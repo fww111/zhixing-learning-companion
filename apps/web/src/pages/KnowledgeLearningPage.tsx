@@ -33,6 +33,7 @@ import {
   type StudentProfile,
   type WorkflowPackage
 } from "../api/client";
+import { AgentTheater } from "../components/AgentTheater";
 import { AgentCollaborationPanel } from "../components/AgentCollaborationPanel";
 import { AssessmentPanel } from "../components/AssessmentPanel";
 import { MindMapViewer } from "../components/MindMapViewer";
@@ -48,6 +49,7 @@ import {
   shouldPersistLessonStageTransition,
   shouldUnlockPostClassroom
 } from "../components/postClassroomExperienceModel";
+import { executeCode } from "../components/codeExecutionModel";
 import { lessonCodeLabViewModel } from "./lessonCodeLabModel";
 import { buildLessonProfileEvent, type LessonTrackedAction } from "./learningProfileEventModel";
 import {
@@ -640,6 +642,7 @@ export function KnowledgeLearningPage() {
               graphConstraints={graphConstraints}
               knowledgeContext={knowledgeContext}
               mindMapResource={mindMapResource}
+              token={token}
               onCodePassed={() => {
                 if (result?.lesson_state) {
                   void persistLessonState({ current_stage: "artifacts", code_lab_completed: true });
@@ -694,6 +697,7 @@ export function KnowledgeLearningPage() {
           </section>
 
           <section className="lesson-insight-grid">
+            <AgentTheater pkg={result} requestedTypes={resourceTypes} running={loading} />
             <AgentCollaborationPanel pkg={result} requestedTypes={resourceTypes} running={loading} />
             <section className="panel rag-guardrail-panel">
               <div className="panel-title">
@@ -837,6 +841,7 @@ function LessonResourceWorkspace({
   mindMapResource,
   onCodePassed,
   onCodeRun,
+  token,
   topic
 }: {
   activePanel: LessonResourcePanel;
@@ -848,6 +853,7 @@ function LessonResourceWorkspace({
   mindMapResource?: Resource;
   onCodePassed: () => void;
   onCodeRun: (event: InlineCodeRunEvent) => void;
+  token?: string;
   topic: string;
 }) {
   if (activePanel === "document") {
@@ -913,6 +919,7 @@ function LessonResourceWorkspace({
           codeLabResource={codeLabResource}
           onCodePassed={onCodePassed}
           onCodeRun={onCodeRun}
+          token={token}
           topic={topic}
         />
       </section>
@@ -926,6 +933,7 @@ interface InlineCodeRunEvent {
   code: string;
   output: string;
   passed: boolean;
+  serverVerdict?: string | null;
 }
 
 function LessonEvidencePanel({ knowledgeContext }: { knowledgeContext: KnowledgeContextItem[] }) {
@@ -953,12 +961,14 @@ function InlineLessonCodeLab({
   course,
   onCodePassed,
   onCodeRun,
+  token,
   topic
 }: {
   codeLabResource?: Resource;
   course?: Course;
   onCodePassed: () => void;
   onCodeRun: (event: InlineCodeRunEvent) => void;
+  token?: string;
   topic: string;
 }) {
   const codeLabModel = useMemo(
@@ -967,27 +977,44 @@ function InlineLessonCodeLab({
   );
   const starter = codeLabModel.starterCode;
   const [code, setCode] = useState(starter);
-  const [output, setOutput] = useState("点击运行，在浏览器内即时查看输出。");
+  const [output, setOutput] = useState("点击运行，代码将提交服务端沙箱真实编译执行。");
   const [passed, setPassed] = useState(false);
   const [attempts, setAttempts] = useState(0);
+  const [running, setRunning] = useState(false);
+  const [serverVerdict, setServerVerdict] = useState<string | null>(null);
 
   useEffect(() => {
     setCode(starter);
-    setOutput("点击运行，在浏览器内即时查看输出。");
+    setOutput("点击运行，代码将提交服务端沙箱真实编译执行。");
     setPassed(false);
     setAttempts(0);
   }, [starter]);
 
-  function runCode() {
-    const nextOutput = runInlinePythonLikeCode(code);
+  async function runCode() {
+    if (running) {
+      return;
+    }
+    setRunning(true);
     const nextAttempts = attempts + 1;
     setAttempts(nextAttempts);
-    setOutput(nextOutput);
-    const ok = isInlineCodeRunSuccessful(nextOutput);
-    setPassed(ok);
-    onCodeRun({ attempts: nextAttempts, code, output: nextOutput, passed: ok });
-    if (ok) {
-      onCodePassed();
+    try {
+      const outcome = await executeCode({
+        token,
+        courseId: course?.id,
+        source: code,
+        expectedOutput: ""
+      });
+      const nextOutput = outcome.output;
+      setOutput(nextOutput);
+      setServerVerdict(outcome.verdict);
+      const ok = outcome.serverVerified ? Boolean(outcome.passed) : isInlineCodeRunSuccessful(nextOutput);
+      setPassed(ok);
+      onCodeRun({ attempts: nextAttempts, code, output: nextOutput, passed: ok, serverVerdict: outcome.verdict });
+      if (ok) {
+        onCodePassed();
+      }
+    } finally {
+      setRunning(false);
     }
   }
 
@@ -1009,18 +1036,25 @@ function InlineLessonCodeLab({
                 <RefreshCw size={15} />
                 重置
               </button>
-              <button className="primary-action compact-button" onClick={runCode} type="button">
+              <button className="primary-action compact-button" disabled={running} onClick={runCode} type="button">
                 <PlayCircle size={15} />
-                运行代码
+                {running ? "沙箱运行中…" : "运行代码"}
               </button>
             </div>
           </div>
           <textarea aria-label="在线编程练习编辑器" onChange={(event) => setCode(event.target.value)} value={code} />
         </div>
         <div className="code-output-panel">
-          <span>即时运行结果</span>
+          <span>
+            真实运行结果
+            {serverVerdict ? (
+              <em className={`sandbox-badge ${serverVerdict === "accepted" ? "ok" : "warn"}`}>
+                服务端沙箱 · {serverVerdict === "accepted" ? "运行通过" : serverVerdict === "wrong_answer" ? "输出不一致" : serverVerdict === "compile_error" ? "编译失败" : serverVerdict === "timeout" ? "运行超时" : "运行出错"}
+              </em>
+            ) : null}
+          </span>
           <pre>{output}</pre>
-          {passed ? <p className="auto-advance-note">代码运行成功，已记录为本节课代码实践完成。</p> : null}
+          {passed ? <p className="auto-advance-note">服务端沙箱真实运行通过，已记录为本节课代码实践完成。</p> : null}
         </div>
       </div>
     </div>

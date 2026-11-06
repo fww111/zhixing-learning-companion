@@ -303,10 +303,16 @@ def search_course_chunks_impl(
 # Registration
 # ---------------------------------------------------------------------------
 
-mcp.tool(name="get_course_graph")(get_course_graph_impl)
-mcp.tool(name="get_node_constraints")(get_node_constraints_impl)
-mcp.tool(name="get_knowledge_evidence")(get_knowledge_evidence_impl)
-mcp.tool(name="search_course_chunks")(search_course_chunks_impl)
+# Single registry shared with the unified single-port entrypoint.
+TOOL_IMPLS = {
+    "get_course_graph": get_course_graph_impl,
+    "get_node_constraints": get_node_constraints_impl,
+    "get_knowledge_evidence": get_knowledge_evidence_impl,
+    "search_course_chunks": search_course_chunks_impl,
+}
+
+for _name, _impl in TOOL_IMPLS.items():
+    mcp.tool(name=_name)(_impl)
 
 
 if __name__ == "__main__":
