@@ -1,11 +1,12 @@
 import json
+import os
 import sys
 from pathlib import Path
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "api"))
 
-URL = "http://127.0.0.1:8100/mcp"
+URL = os.getenv("MCP_SMOKE_URL", "http://127.0.0.1:8080/mcp")
 HEADERS = {"Content-Type": "application/json", "Accept": "application/json, text/event-stream"}
 
 

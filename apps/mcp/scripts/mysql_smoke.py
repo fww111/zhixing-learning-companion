@@ -1,6 +1,7 @@
 import json
+import os
 import httpx
-URL = "http://127.0.0.1:8100/mcp"
+URL = os.getenv("MCP_SMOKE_URL", "http://127.0.0.1:8080/mcp")
 H = {"Content-Type": "application/json", "Accept": "application/json, text/event-stream"}
 def parse(resp):
     if "text/event-stream" in resp.headers.get("content-type", ""):

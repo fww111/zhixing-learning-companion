@@ -5,13 +5,6 @@ import { useAttentionAnalysis, type AttentionSample } from "../composables/useAt
 import { setSharedAttention } from "../state/attentionShared";
 import { createLearningProfileEvent } from "../api/client";
 
-/** 临时调试：暴露内部信号供阈值校准（验证完移除） */
-declare global {
-  interface Window {
-    __attentionDebug?: { browFurrow: number; squint: number; gazeX: number; gazeY: number; yawDeg: number; blinkBoth: number };
-  }
-}
-
 const STATE_LABELS: Record<AttentionStateKey, string> = {
   focused: "专注中",
   confused: "似乎有点困惑",
@@ -78,19 +71,6 @@ export function AttentionFloating({ token, activeCourseId, nodeId, topic, onInte
   attentionStopRef.current = attention.stop;
 
   const [intervention, setIntervention] = useState(false);
-  // 临时调试条：轮询读取最新帧信号
-  const [debug, setDebug] = useState<{ browFurrow: number; squint: number; gazeX: number } | null>(null);
-  useEffect(() => {
-    if (!enabled) {
-      setDebug(null);
-      return;
-    }
-    const timer = window.setInterval(() => {
-      const d = (window as unknown as { __attentionDebug?: { browFurrow: number; squint: number; gazeX: number } }).__attentionDebug;
-      if (d) setDebug({ browFurrow: d.browFurrow, squint: d.squint, gazeX: d.gazeX });
-    }, 500);
-    return () => window.clearInterval(timer);
-  }, [enabled]);
   const confusedSinceRef = useRef<number | null>(null);
   const interventionsByNodeRef = useRef<Map<string, number>>(new Map());
   const interveneContextRef = useRef<{ nodeId: string; topic: string; state: AttentionStateKey } | null>(null);
@@ -170,7 +150,9 @@ export function AttentionFloating({ token, activeCourseId, nodeId, topic, onInte
   return (
     <aside className="attention-card" aria-label="学习状态感知">
       <div className="attention-card-head">
-        <Eye size={15} />
+        <span className={`attention-breath-ring ${STATE_CLASS[attention.status.state]} ${enabled ? "on" : ""}`} aria-hidden="true">
+          <i />
+        </span>
         <strong>学习状态感知</strong>
         {enabled ? (
           <button className="attention-toggle on" disabled={busy} onClick={handleDisable} type="button">
@@ -199,11 +181,6 @@ export function AttentionFloating({ token, activeCourseId, nodeId, topic, onInte
             {attention.status.blinkRatePerMinute > 0 ? (
               <small>眨眼 {attention.status.blinkRatePerMinute}/min</small>
             ) : null}
-            {debug ? (
-              <small className="attention-debug">
-                皱眉{debug.browFurrow.toFixed(2)} 眯眼{debug.squint.toFixed(2)} 视线X{debug.gazeX.toFixed(2)}
-              </small>
-            ) : null}
             {busy ? <small>模型加载中…</small> : null}
             {attention.status.error ? <small className="attention-error">{attention.status.error}</small> : null}
             <small className="attention-privacy">
@@ -223,6 +200,31 @@ export function AttentionFloating({ token, activeCourseId, nodeId, topic, onInte
           <Wand2 size={13} />
           看起来这一段有点难？让 AI 换种讲法
         </button>
+      ) : null}
+
+      {intervention ? (
+        <div className="attention-fullscreen-intervention" role="dialog" aria-label="AI 主动介入">
+          <div className="afi-backdrop" aria-hidden="true" />
+          <div className="afi-card">
+            <span className="afi-orb" aria-hidden="true" />
+            <p className="afi-eyebrow">AI 老师注意到你了</p>
+            <h3>这一段可能有点难？</h3>
+            <p className="afi-body">
+              你在「{topic || "当前知识点"}」上已经困惑了一会儿。我可以结合课程知识库，
+              先用一个直觉类比、再给一个可运行的例子，换一种讲法。
+            </p>
+            <div className="afi-actions">
+              <button className="primary-action" onClick={handleIntervene} type="button">
+                <Wand2 size={16} />
+                换种讲法
+              </button>
+              <button className="secondary-action" onClick={() => setIntervention(false)} type="button">
+                我自己再想想
+              </button>
+            </div>
+            <small className="afi-privacy">画面仅在本机分析，AI 只收到状态信号</small>
+          </div>
+        </div>
       ) : null}
     </aside>
   );

@@ -16,6 +16,8 @@ export interface CodeAssessmentAttemptInput {
   actualOutput: string;
   passed: boolean;
   attempts: number;
+  /** 服务端沙箱判分结论（accepted/wrong_answer/compile_error/runtime_error/timeout），离线模拟时为空 */
+  serverVerdict?: string | null;
 }
 
 export interface AssessmentContextInput {
@@ -837,7 +839,8 @@ export function buildComprehensiveAssessmentPayload(input: {
       expected_output: input.codeAttempt.expectedOutput,
       actual_output: input.codeAttempt.actualOutput,
       passed: input.codeAttempt.passed,
-      attempts: Math.max(1, input.codeAttempt.attempts)
+      attempts: Math.max(1, input.codeAttempt.attempts),
+      server_verdict: input.codeAttempt.serverVerdict || undefined
     },
     detail: `${input.topic} 综合评估：选择题 ${Math.round(previewQuizScore(input.answers, quizItems) * 100)}%，代码题${input.codeAttempt.passed ? "通过" : "未通过"}`
   };

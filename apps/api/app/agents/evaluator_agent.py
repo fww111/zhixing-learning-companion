@@ -98,6 +98,16 @@ class EvaluatorAgent:
         attempt = payload.code_attempt
         if attempt is None:
             return 0.0
+        # 服务端沙箱真实判分优先：verdict 由 /code/run 生成，前端无法伪造
+        server_verdict = (attempt.server_verdict or "").strip().lower()
+        if server_verdict:
+            penalty = min(max(attempt.attempts - 1, 0) * 0.08, 0.24)
+            if server_verdict == "accepted":
+                return self._round_score(max(0.76, 1.0 - penalty))
+            if server_verdict == "wrong_answer":
+                return self._round_score(0.25 if attempt.code.strip() else 0.0)
+            # compile_error / runtime_error / timeout：至少写了代码给基础分
+            return self._round_score(0.2 if attempt.code.strip() else 0.0)
         if self._code_output_matches(attempt.expected_output, attempt.actual_output):
             penalty = min(max(attempt.attempts - 1, 0) * 0.08, 0.24)
             return self._round_score(max(0.76, 1.0 - penalty))

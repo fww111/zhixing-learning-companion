@@ -24,14 +24,15 @@ services:
     depends_on:
       - api
 
-  # 三个 MCP Server 单镜像：profile(8100) / graph(8101) / assessment(8102)
+  # MCP Server 单端口单容器：17 个工具聚合在一个 FastMCP（POST /mcp + GET /ping），
+  # 端口 8080，与 AgentArts 运行时/自定义接入契约一致。
   # 镜像构建见 apps/mcp/Dockerfile，构建上下文必须为仓库根目录。
-  # 部署手册见 docs/agentarts/06-MCP 配置手册.md。
+  # 公网部署与登记手册见 docs/agentarts/07-MCP 配置手册.md。
   mcp:
     build:
       context: .
       dockerfile: apps/mcp/Dockerfile
-    image: zhixing-mcp-servers:latest
+    image: zhixing-mcp:latest
     container_name: zhixing-mcp
     restart: unless-stopped
     # 容器内通过 host.docker.internal 访问宿主机上的 MySQL / Neo4j；
@@ -39,23 +40,23 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
-      MOCK_LLM: "true"
+      MOCK_LLM: ${MOCK_LLM:-true}
       MCP_HOST: "0.0.0.0"
       MCP_LOG_LEVEL: ${MCP_LOG_LEVEL:-INFO}
+      # 独立部署（ECS/隧道）默认 local 模式：设 MCP_ACCESS_TOKEN 后强制 Bearer 校验，
+      # 留空则无鉴权（仅限安全组白名单联调）。接入 AgentArts 运行时网关时改 platform。
+      MCP_AUTH_MODE: ${MCP_AUTH_MODE:-local}
+      MCP_ACCESS_TOKEN: ${MCP_ACCESS_TOKEN:-}
       # 关系库：默认连宿主机 MySQL；本机 MySQL 未启动时可在 .env 中改为
       # sqlite（仅 profile/assessment 联调，路径需落在挂载卷上）：
       #   MCP_DATABASE_URL=sqlite:////data/mcp/mcp.db
       DATABASE_URL: ${MCP_DATABASE_URL:-mysql+pymysql://root:123456@host.docker.internal:3306/softbei?charset=utf8mb4}
       MCP_AUTO_INIT_DB: ${MCP_AUTO_INIT_DB:-false}
-      # 图数据库：graph-server 强依赖 Neo4j，不可用 sqlite 替代
+      # 图数据库：graph 工具强依赖 Neo4j，不可用 sqlite 替代
       NEO4J_URI: ${MCP_NEO4J_URI:-bolt://host.docker.internal:7687}
       NEO4J_USER: ${MCP_NEO4J_USER:-neo4j}
       NEO4J_PASSWORD: ${MCP_NEO4J_PASSWORD:-}
-      # 仅当 AgentArts 接入支持自定义 Header 时才在 .env 设置该值；留空则不启用鉴权
-      MCP_ACCESS_TOKEN: ${MCP_ACCESS_TOKEN:-}
     volumes:
       - ./data/mcp:/data
     ports:
-      - "8100:8100"
-      - "8101:8101"
-      - "8102:8102"
+      - "${MCP_PORT:-8080}:8080"
