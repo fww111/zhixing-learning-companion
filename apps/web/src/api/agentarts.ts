@@ -28,6 +28,8 @@ export interface AgentArtsStreamOptions {
   courseId?: number;
   nodeId?: string;
   history?: AgentArtsHistoryMessage[];
+  /** 学习状态感知（issue #15 AgentArts 兼容）：focused/confused/distracted/tired/no_face，空串未开启 */
+  attentionState?: string;
   signal?: AbortSignal;
   reconnectLimit?: number;
   timeoutMs?: number;
@@ -185,6 +187,7 @@ export async function streamAgentArtsChat(
           course_id: options.courseId,
           node_id: options.nodeId,
           history: options.history,
+          attention_state: options.attentionState ?? "",
         }),
         signal: controller.signal,
       });

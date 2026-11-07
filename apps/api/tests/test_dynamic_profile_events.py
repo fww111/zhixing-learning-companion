@@ -282,3 +282,92 @@ def test_profile_update_logs_and_path_revisions_are_queryable_and_course_scoped(
     assert c_logs.status_code == 200
     assert [item["course_id"] for item in c_logs.json()] == [2]
     assert blocked.status_code == 404
+
+
+def test_attention_samples_write_weak_point_evidence_when_confused_dense(tmp_path):
+    """issue #15：困惑密集采样 → weak_points 证据写入画像更新日志。"""
+    client = make_client(tmp_path)
+    token = register(client, "attention-user")
+    auth = {"Authorization": f"Bearer {token}"}
+    course = client.post(
+        "/api/courses",
+        headers=auth,
+        json={"name": "C++ 算法学习", "major": "计算机", "level": "大二", "description": "attention test"},
+    )
+    course_id = course.json()["id"]
+    with client.app.state.testing_session_factory() as db:
+        add_confirmed_profile(db, user_id=1, course_id=course_id, student_id="student-attention", goal="master C++ algorithms")
+        db.commit()
+
+    def sample(dominant: str):
+        response = client.post(
+            f"/api/courses/{course_id}/profile-events",
+            headers=auth,
+            json={
+                "event_type": "attention_sample",
+                "topic": "6.3 背包问题",
+                "knowledge_node_id": "node-6-3",
+                "detail": f"专注度采样（主导状态 {dominant}）",
+                "event_payload": {"dominant": dominant, "confidence": 0.8},
+                "evidence_strength": "weak",
+            },
+        )
+        assert response.status_code == 200, response.text
+
+    # 5 次采样中 3 次困惑（60% ≥ 40%）→ 触发薄弱点写入
+    for dominant in ("confused", "confused", "focused", "confused", "focused"):
+        sample(dominant)
+
+    profile = client.get(f"/api/profiles/me?course_id={course_id}", headers=auth).json()
+    assert "6.3 背包问题" in (profile.get("weak_points") or [])
+    attention = profile.get("attention_pattern") or {}
+    node_stats = (attention.get("confused_by_node") or {})["node-6-3"]
+    assert node_stats == {"total": 5, "confused": 3}
+
+    # 画像更新日志包含困惑证据
+    logs = client.get(f"/api/courses/{course_id}/profile-update-logs", headers=auth).json()
+    evidence_entries = [
+        entry
+        for log in logs
+        for entry in (log.get("after_snapshot", {}).get("updated_evidence") or [])
+        if entry.get("source") == "attention_sample" and "困惑占" in str(entry.get("detail") or "")
+    ]
+    assert evidence_entries, "attention confused evidence should appear in profile update logs"
+    assert any("weak_points" in (log.get("changed_dimensions") or []) for log in logs), (
+        "weak_points change should be logged"
+    )
+
+
+def test_attention_samples_do_not_write_weak_point_when_sparse(tmp_path):
+    client = make_client(tmp_path)
+    token = register(client, "attention-sparse-user")
+    auth = {"Authorization": f"Bearer {token}"}
+    course = client.post(
+        "/api/courses",
+        headers=auth,
+        json={"name": "Python 程序设计", "major": "计算机", "level": "大二", "description": "attention sparse"},
+    )
+    course_id = course.json()["id"]
+    with client.app.state.testing_session_factory() as db:
+        add_confirmed_profile(db, user_id=1, course_id=course_id, student_id="student-attention-sparse", goal="master Python")
+        db.commit()
+
+    # 仅 2 次采样（未达 5 次门槛），即使全是困惑也不写入
+    for dominant in ("confused", "confused"):
+        client.post(
+            f"/api/courses/{course_id}/profile-events",
+            headers=auth,
+            json={
+                "event_type": "attention_sample",
+                "topic": "1.1 变量",
+                "knowledge_node_id": "node-1-1",
+                "detail": "专注度采样",
+                "event_payload": {"dominant": dominant},
+                "evidence_strength": "weak",
+            },
+        )
+
+    profile = client.get(f"/api/profiles/me?course_id={course_id}", headers=auth).json()
+    assert "1.1 变量" not in (profile.get("weak_points") or [])
+    node_stats = (profile.get("attention_pattern") or {}).get("confused_by_node", {})["node-1-1"]
+    assert node_stats == {"total": 2, "confused": 2}

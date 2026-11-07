@@ -1,4 +1,4 @@
-import { Activity, ArrowLeft, ArrowRight, BarChart3, BookOpenCheck, CheckCircle2, Code2, ListChecks, Network, RefreshCw, Route, ShieldAlert, Target } from "lucide-react";
+import { Activity, ArrowLeft, ArrowRight, BarChart3, BookOpenCheck, CheckCircle2, Code2, Eye, ListChecks, Network, RefreshCw, Route, ShieldAlert, Target } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -16,6 +16,7 @@ import {
 } from "./courseAssessmentDashboardModel";
 import { buildWrongQuestionBookModel } from "./courseWrongQuestionBookModel";
 import { buildAssessmentTrend } from "./courseAssessmentDashboardModel";
+import { ATTENTION_STATE_LABELS, buildAttentionStats, type AttentionStateKey } from "./attentionStatsModel";
 import { MasteryDistributionChart, MasteryRadarChart, ScoreTrendChart, type MasterySlice } from "../components/MasteryCharts";
 
 const masteryLabels: Record<string, string> = {
@@ -55,6 +56,7 @@ export function CourseAssessmentPage() {
     [events, graph]
   );
   const trendPoints = useMemo(() => buildAssessmentTrend(events), [events]);
+  const attentionStats = useMemo(() => buildAttentionStats(events), [events]);
   const masterySlices = useMemo<MasterySlice[]>(() => [
     { key: "not_started", label: "未学习", value: dashboard.masteryCounts["not_started"] ?? 0, color: "#94a3b8" },
     { key: "severe_weak", label: "严重弱项", value: dashboard.masteryCounts["severe_weak"] ?? 0, color: "#ef4444" },
@@ -162,6 +164,54 @@ export function CourseAssessmentPage() {
               <span>每次课堂测试的综合得分</span>
             </div>
             <ScoreTrendChart points={trendPoints} />
+          </section>
+
+          <section className="panel attention-stats-panel">
+            <div className="panel-title">
+              <Eye size={18} />
+              <h2>专注度分析</h2>
+              <span>
+                {attentionStats.total
+                  ? `${attentionStats.total} 次采样 · 来自学习状态感知`
+                  : "开启学习状态感知后自动采样"}
+              </span>
+            </div>
+            {attentionStats.total ? (
+              <>
+                <div className="attention-stats-bar" aria-label="专注状态占比">
+                  {(["focused", "confused", "distracted", "tired", "no_face"] as AttentionStateKey[]).map((key) => {
+                    const value = key === "no_face" ? attentionStats.noFace : attentionStats[key];
+                    if (!value) {
+                      return null;
+                    }
+                    const percent = Math.round((value / attentionStats.total) * 100);
+                    return (
+                      <span
+                        className={`attention-seg attention-seg-${key}`}
+                        key={key}
+                        style={{ width: `${percent}%` }}
+                        title={`${ATTENTION_STATE_LABELS[key]} ${percent}%`}
+                      />
+                    );
+                  })}
+                </div>
+                <div className="attention-stats-legend">
+                  {(["focused", "confused", "distracted", "tired", "no_face"] as AttentionStateKey[]).map((key) => (
+                    <span key={key}>
+                      <i className={`attention-seg-${key}`} />
+                      {ATTENTION_STATE_LABELS[key]} {key === "no_face" ? attentionStats.noFace : attentionStats[key]} 次
+                    </span>
+                  ))}
+                </div>
+                {attentionStats.confusedSignal ? (
+                  <p className="attention-stats-warning">
+                    「{attentionStats.topics[0] || "当前知识点"}」学习中困惑占比 {attentionStats.confusedPercent}%——这个知识点可能偏难，建议生成补救路径或让 AI 换种讲法。
+                  </p>
+                ) : null}
+              </>
+            ) : (
+              <p className="empty">暂无专注度采样。在知识点学习页开启左下角「学习状态感知」后，这里会展示专注/困惑/走神的占比与学习建议。</p>
+            )}
           </section>
 
           <section className="panel mastery-distribution-panel">

@@ -9851,3 +9851,87 @@ textarea {
   0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.38); }
   55% { box-shadow: 0 0 0 12px rgba(99, 102, 241, 0); }
 }
+
+/* 走神温和提醒（不打断、自动消失） */
+.attention-gentle-hint {
+  align-items: center;
+  animation: attention-pulse 1.6s ease-in-out infinite;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  border-radius: var(--radius-sm);
+  color: #7dd3fc;
+  display: flex;
+  font-size: 12px;
+  font-weight: 600;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 8px 10px;
+}
+
+/* 评估页专注度分析（issue #15） */
+.attention-stats-bar {
+  background: var(--surface-muted);
+  border-radius: var(--radius-pill);
+  display: flex;
+  height: 14px;
+  overflow: hidden;
+}
+
+.attention-stats-bar span {
+  min-width: 4px;
+}
+
+.attention-seg-focused {
+  background: #38bdf8;
+}
+
+.attention-seg-confused {
+  background: #fb923c;
+}
+
+.attention-seg-distracted {
+  background: #a78bfa;
+}
+
+.attention-seg-tired {
+  background: #94a3b8;
+}
+
+.attention-seg-no_face {
+  background: var(--surface-sunken);
+}
+
+.attention-stats-legend {
+  color: var(--text-soft);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.attention-stats-legend span {
+  align-items: center;
+  display: inline-flex;
+  gap: 6px;
+}
+
+.attention-stats-legend i {
+  border-radius: 50%;
+  display: inline-block;
+  height: 9px;
+  width: 9px;
+}
+
+.attention-stats-warning {
+  background: var(--warning-soft);
+  border: 1px solid var(--warning-border);
+  border-radius: var(--radius-md);
+  color: var(--warning-text);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.7;
+  margin: 12px 0 0;
+  padding: 10px 14px;
+}
