@@ -9955,3 +9955,198 @@ textarea {
   color: var(--engine-accent-2);
   flex-shrink: 0;
 }
+
+/* 记忆引擎复习卡（今日页/错题本） */
+.today-card-head.review {
+  color: var(--info-600);
+}
+
+.today-chip.review {
+  background: var(--info-soft);
+  color: var(--info-text);
+}
+
+.today-review-note {
+  border-top: 1px dashed var(--border-subtle);
+  color: var(--text-faint);
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 10px;
+  padding-top: 8px;
+}
+
+.today-review-card {
+  grid-column: 1 / -1;
+}
+
+.wrong-book-review-banner {
+  align-items: center;
+  background: var(--info-soft);
+  border: 1px solid var(--info-border);
+  display: flex;
+  gap: 14px;
+  padding: 14px 18px;
+}
+
+.wrong-book-review-banner svg {
+  color: var(--info-600);
+  flex-shrink: 0;
+}
+
+.wrong-book-review-banner strong {
+  color: var(--info-text);
+  font-size: 14px;
+}
+
+.wrong-book-review-banner p {
+  color: var(--text-soft);
+  font-size: 12.5px;
+  line-height: 1.6;
+  margin: 4px 0 0;
+}
+
+.wrong-book-review-banner button {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* AI 结对调试面板 */
+.debug-mentor {
+  border-top: 1px dashed var(--border-subtle);
+  display: grid;
+  gap: 10px;
+  padding-top: 10px;
+}
+
+.debug-mentor-launch {
+  justify-self: start;
+}
+
+.debug-mentor-loading {
+  align-items: center;
+  color: var(--text-muted);
+  display: flex;
+  font-size: 13px;
+  font-weight: 800;
+  gap: 8px;
+}
+
+.debug-mentor-error {
+  align-items: center;
+  background: var(--danger-soft);
+  border: 1px solid var(--danger-border);
+  border-radius: var(--radius-md);
+  color: var(--danger-text);
+  display: flex;
+  font-size: 13px;
+  font-weight: 800;
+  gap: 10px;
+  padding: 9px 12px;
+}
+
+.debug-mentor-error button {
+  margin-left: auto;
+}
+
+.debug-mentor-card {
+  background: var(--brand-softer);
+  border: 1px solid var(--border-brand);
+  border-radius: var(--radius-md);
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px;
+}
+
+.debug-mentor-head {
+  align-items: center;
+  color: var(--brand-600);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.debug-mentor-head strong {
+  color: var(--text-strong);
+  font-size: 14px;
+}
+
+.debug-mentor-head em {
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+  padding: 2px 9px;
+}
+
+.debug-mentor-category {
+  background: var(--warning-soft);
+  color: var(--warning-text);
+}
+
+.debug-mentor-concept {
+  background: var(--brand-soft);
+  color: var(--brand-600);
+}
+
+.debug-mentor-diagnosis {
+  color: var(--text-strong);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.debug-mentor-hints {
+  display: grid;
+  gap: 8px;
+}
+
+.debug-mentor-hint {
+  align-items: flex-start;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  display: flex;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 8px;
+  line-height: 1.65;
+  padding: 10px 12px;
+}
+
+.debug-mentor-hint svg {
+  color: var(--warning-600);
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.debug-mentor-hint.level-2 {
+  border-color: var(--border-brand);
+}
+
+.debug-mentor-hint.level-3 {
+  border-color: var(--success-border);
+  background: var(--success-soft);
+}
+
+.debug-mentor-unlock {
+  justify-self: start;
+}
+
+.debug-mentor-guidance {
+  color: var(--text-faint);
+  font-size: 11.5px;
+}
+
+.debug-mentor-apply {
+  justify-self: start;
+}
+
+.debug-mentor-applied {
+  align-items: center;
+  color: var(--success-text);
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 800;
+  gap: 6px;
+}

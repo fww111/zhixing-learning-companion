@@ -1,14 +1,16 @@
-import { ArrowRight, BookOpenCheck, CalendarClock, CheckCircle2, Flame, ListChecks, Loader2, MapPinned, PlayCircle, RefreshCw, Target } from "lucide-react";
+import { ArrowRight, BookOpenCheck, BrainCircuit, CalendarClock, CheckCircle2, Flame, ListChecks, Loader2, MapPinned, PlayCircle, RefreshCw, Target } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   getCourse,
   getKnowledgeGraph,
+  getReviewQueue,
   listLearningProfileEvents,
   planCourseLearningPath,
   type Course,
   type KnowledgeGraph,
-  type LearningProfileEvent
+  type LearningProfileEvent,
+  type ReviewQueue
 } from "../api/client";
 import { useAuth } from "../state/auth";
 import { buildTodayDashboardModel, type MasteryStats, type TodayDashboardModel } from "./todayDashboardModel";
@@ -36,6 +38,7 @@ export function TodayPage() {
   const numericCourseId = Number(courseId);
   const [course, setCourse] = useState<Course>();
   const [model, setModel] = useState<TodayDashboardModel>();
+  const [reviewQueue, setReviewQueue] = useState<ReviewQueue>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -48,13 +51,15 @@ export function TodayPage() {
     setLoading(true);
     setError("");
     try {
-      const [nextCourse, nextPath, nextGraph, nextEvents] = await Promise.all([
+      const [nextCourse, nextPath, nextGraph, nextEvents, nextReview] = await Promise.all([
         getCourse(token, numericCourseId),
         planCourseLearningPath(token, numericCourseId).catch(() => undefined),
         getKnowledgeGraph(token, numericCourseId).catch(() => undefined),
-        listLearningProfileEvents(token, numericCourseId).catch(() => [] as LearningProfileEvent[])
+        listLearningProfileEvents(token, numericCourseId).catch(() => [] as LearningProfileEvent[]),
+        getReviewQueue(token, numericCourseId).catch(() => undefined)
       ]);
       setCourse(nextCourse);
+      setReviewQueue(nextReview);
       setModel(
         buildTodayDashboardModel({
           path: nextPath,
@@ -185,6 +190,47 @@ export function TodayPage() {
                 </div>
               ) : null}
             </section>
+
+            {reviewQueue && reviewQueue.stats.due_count ? (
+              <section className="panel today-review-card">
+                <div className="today-card-head review">
+                  <BrainCircuit size={16} />
+                  <h3>记忆复习</h3>
+                  <span className="today-chip review">
+                    {reviewQueue.stats.due_count} 个知识点到期
+                    {reviewQueue.stats.high_risk_count ? ` · ${reviewQueue.stats.high_risk_count} 个高危` : ""}
+                  </span>
+                </div>
+                <ul className="today-task-list">
+                  {reviewQueue.items
+                    .filter((item) => item.due_today)
+                    .slice(0, 3)
+                    .map((item) => (
+                      <li key={item.node_id}>
+                        <div className="today-task-info">
+                          <strong>{item.topic}</strong>
+                          <small>
+                            <CalendarClock size={12} />
+                            {item.overdue_days ? `已过期 ${item.overdue_days} 天` : "今日到期"}
+                            {item.high_risk ? " · 高危薄弱点" : ""}
+                          </small>
+                        </div>
+                        <button
+                          className="primary-action compact-button"
+                          onClick={() => navigate(`/courses/${numericCourseId}/knowledge/${encodeURIComponent(item.node_id)}`)}
+                          type="button"
+                        >
+                          <PlayCircle size={14} />
+                          去复习
+                        </button>
+                      </li>
+                    ))}
+                </ul>
+                <small className="today-review-note">
+                  记忆引擎按艾宾浩斯间隔（1/3/7/14 天）安排复习：通过则间隔加倍，失败则重置。
+                </small>
+              </section>
+            ) : null}
 
             <div className="today-metric-col">
               <MasteryCard navigate={navigate} courseId={numericCourseId} stats={model.mastery} />

@@ -1192,6 +1192,91 @@ export async function startTutorVoiceSession(
   return response.json();
 }
 
+/* ===== 记忆引擎 + AI 结对调试（创新功能） ===== */
+
+export interface ReviewQueueItem {
+  node_id: string;
+  topic: string;
+  level: number;
+  interval_days: number;
+  next_review_date: string;
+  due_today: boolean;
+  overdue_days: number;
+  failure_count: number;
+  high_risk: boolean;
+  passed_streak: number;
+  last_event_at: string;
+}
+
+export interface ReviewQueue {
+  course_id: number;
+  algorithm: string;
+  intervals_days: number[];
+  items: ReviewQueueItem[];
+  stats: { due_count: number; high_risk_count: number; tracked_nodes: number; longest_streak: number };
+}
+
+export async function getReviewQueue(token: string | undefined, courseId: number): Promise<ReviewQueue> {
+  const response = await fetch(`/api/courses/${courseId}/memory/review-queue`, {
+    headers: authHeaders(token)
+  });
+  if (!response.ok) {
+    throw await apiError(response, "获取复习队列失败");
+  }
+  return response.json();
+}
+
+export interface DebugHintRequestPayload {
+  course_id: number;
+  node_id: string;
+  topic: string;
+  source_code: string;
+  error_output: string;
+  verdict: string;
+  stdin_text?: string;
+  expected_output?: string;
+  actual_output?: string;
+}
+
+export interface DebugHintResult {
+  diagnosis: string;
+  error_category: "syntax" | "type" | "boundary" | "logic" | "runtime" | "output";
+  /** 三级递进提示：前端逐级解锁（human-in-the-loop：先自己改，再看更多提示） */
+  hints: string[];
+  fixed_code: string;
+  key_concept: string;
+  evidence_chunks: TutorEvidenceChunk[];
+  verification: Record<string, unknown>;
+}
+
+export async function requestDebugHint(
+  token: string | undefined,
+  payload: DebugHintRequestPayload,
+  timeoutMs = 90000
+): Promise<DebugHintResult> {
+  const controller = new AbortController();
+  const timeoutId = globalThis.setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(`/api/courses/${payload.course_id}/debug-hint`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders(token) },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+    if (!response.ok) {
+      throw await apiError(response, "AI 结对调试请求失败");
+    }
+    return response.json();
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new Error("AI 结对调试请求超时，请稍后重试");
+    }
+    throw error;
+  } finally {
+    globalThis.clearTimeout(timeoutId);
+  }
+}
+
 export async function runCodeSubmission(
   token: string | undefined,
   courseId: number,
