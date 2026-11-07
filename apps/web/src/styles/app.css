@@ -10150,3 +10150,212 @@ textarea {
   font-weight: 800;
   gap: 6px;
 }
+
+/* 随堂实战练习 + 算法可视化 */
+.practice-panel {
+  border-top: 1px dashed var(--border-subtle);
+  display: grid;
+  gap: 12px;
+  padding-top: 14px;
+}
+
+.practice-head {
+  align-items: center;
+  color: var(--brand-600);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.practice-head h3 {
+  color: var(--text-strong);
+  font-size: 15px;
+  margin: 0;
+}
+
+.practice-head .primary-action {
+  margin-left: auto;
+}
+
+.practice-question {
+  background: var(--brand-softer);
+  border: 1px solid var(--border-brand);
+  border-radius: var(--radius-md);
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+}
+
+.practice-question-head {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.practice-question-head strong {
+  color: var(--text-strong);
+  font-size: 14px;
+}
+
+.practice-question p {
+  color: var(--text-soft);
+  font-size: 13px;
+  line-height: 1.75;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.practice-question-head em,
+.practice-difficulty {
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+  padding: 2px 9px;
+}
+
+.practice-difficulty {
+  background: var(--surface-muted);
+  color: var(--text-soft);
+}
+
+.practice-verified {
+  background: var(--success-soft);
+  color: var(--success-text);
+  align-items: center;
+  display: inline-flex;
+  gap: 4px;
+}
+
+.practice-unverified {
+  background: var(--warning-soft);
+  color: var(--warning-text);
+}
+
+.practice-hints summary {
+  color: var(--brand-600);
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 800;
+}
+
+.practice-hints ul {
+  color: var(--text-soft);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.7;
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+/* 可视化步进器 */
+.algo-viz {
+  display: grid;
+  gap: 8px;
+}
+
+.algo-viz-stage {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px 12px 6px;
+}
+
+.algo-viz-svg {
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
+.algo-viz-value {
+  fill: var(--foreground);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.algo-viz-index {
+  fill: var(--muted-foreground);
+  font-size: 10px;
+}
+
+.algo-viz-label {
+  color: var(--text-soft);
+  font-size: 12.5px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.algo-viz-progress {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  padding: 4px 0 6px;
+}
+
+.algo-viz-progress i {
+  background: var(--surface-muted);
+  border-radius: var(--radius-pill);
+  height: 4px;
+  width: 18px;
+}
+
+.algo-viz-progress i.active {
+  background: var(--viz-series-1);
+}
+
+.algo-viz-controls {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.practice-code-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1.3fr) minmax(220px, 1fr);
+}
+
+.practice-io {
+  display: grid;
+  gap: 8px;
+}
+
+.practice-io span {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.practice-io pre {
+  background: var(--surface-soft);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 4px 0 0;
+  max-height: 90px;
+  overflow: auto;
+  padding: 8px 10px;
+  white-space: pre-wrap;
+}
+
+.practice-pass {
+  align-items: center;
+  background: var(--success-soft);
+  border: 1px solid var(--success-border);
+  border-radius: var(--radius-md);
+  color: var(--success-text);
+  display: flex;
+  font-size: 13px;
+  font-weight: 800;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 14px;
+}
+
+@media (max-width: 900px) {
+  .practice-code-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -6,6 +6,8 @@ from sqlalchemy import select
 
 from app.models.course import KnowledgeChunk
 from app.services.course_service import CourseService
+from app.services.rag_fusion import compress_chunk_to_relevant_sentences, rrf_fuse_hits
+from app.services.rag_lexicon import expand_query_with_terms
 
 
 class AgenticRAGService:
@@ -30,8 +32,12 @@ class AgenticRAGService:
             }
 
         graph_constraints = self._graph_constraints(user_id, course_id, node_id, topic)
-        queries = self._retrieval_queries(topic, graph_constraints)
-        vector_hits = self._vector_hits(user_id, course_id, queries)
+        queries = [
+            expand_query_with_terms(query)
+            for query in self._retrieval_queries(topic, graph_constraints)
+        ]
+        raw_hits = self._vector_hits(user_id, course_id, queries)
+        vector_hits = rrf_fuse_hits(raw_hits, max_results=30)
         knowledge_context, retrieval_trace = self._mysql_context_from_hits(course_id, vector_hits)
 
         if not knowledge_context:
@@ -109,22 +115,22 @@ class AgenticRAGService:
         }
 
     def _vector_hits(self, user_id: int, course_id: int, queries: list[str]) -> list[dict[str, Any]]:
+        """多路向量召回：每路按返回顺序记 rank（交给 RRF 跨路融合）。"""
         hits = []
-        seen = set()
         for query in queries:
             try:
                 results = self.course_service.semantic_search(user_id, course_id, query)
             except Exception:
                 results = []
-            for result in results:
+            for rank, result in enumerate(results):
                 chunk_id = self._coerce_chunk_id(result.get("chunk_id"))
-                if chunk_id is None or chunk_id in seen:
+                if chunk_id is None:
                     continue
-                seen.add(chunk_id)
                 hits.append(
                     {
                         "query": query,
                         "chunk_id": chunk_id,
+                        "_rank": rank,
                         "distance": result.get("distance"),
                         "vector_source_locator": result.get("source_locator"),
                     }
@@ -161,15 +167,17 @@ class AgenticRAGService:
                     }
                 )
                 continue
-            context.append(self._chunk_context(chunk, hit["query"], hit.get("distance")))
+            context.append(self._chunk_context(chunk, hit.get("first_query") or hit.get("query") or "", hit.get("distance")))
             trace.append(
                 {
-                    "query": hit["query"],
+                    "query": hit.get("first_query") or hit.get("query") or "",
+                    "hit_queries": hit.get("hit_queries") or [],
+                    "rrf_score": hit.get("rrf_score"),
                     "vector_chunk_id": hit["chunk_id"],
                     "mysql_chunk_id": chunk.id,
                     "source_locator": chunk.source_locator,
                     "distance": hit.get("distance"),
-                    "strategy": "vector_to_mysql",
+                    "strategy": "vector_to_mysql_rrf",
                 }
             )
         return context, trace
@@ -205,11 +213,14 @@ class AgenticRAGService:
         return list(dict.fromkeys(value for value in values if value))[:6]
 
     def _chunk_context(self, chunk: KnowledgeChunk, query: str, distance: Any | None = None) -> dict[str, Any]:
+        compressed = compress_chunk_to_relevant_sentences(chunk.content, query)
         return {
             "chunk_id": chunk.id,
             "source_locator": chunk.source_locator or chunk.heading or "本地知识库",
             "heading": chunk.heading,
-            "content": chunk.content,
+            # 句级抽取式压缩：按查询相关度保留句子（chunk_id 仍指向 MySQL 原文，可回溯全文）
+            "content": compressed,
+            "compressed": len(compressed) < len(chunk.content),
             "retrieval_query": query,
             "distance": distance,
             "storage": "mysql",

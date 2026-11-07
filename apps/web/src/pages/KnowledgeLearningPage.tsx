@@ -51,6 +51,7 @@ import {
 } from "../components/postClassroomExperienceModel";
 import { executeCode } from "../components/codeExecutionModel";
 import { DebugMentorPanel } from "../components/DebugMentorPanel";
+import { PracticePanel } from "../components/PracticePanel";
 import { CODE_RUN_FAILED_EVENT } from "../components/AttentionFloating";
 import { lessonCodeLabViewModel } from "./lessonCodeLabModel";
 import { buildLessonProfileEvent, type LessonTrackedAction } from "./learningProfileEventModel";
@@ -925,6 +926,7 @@ function LessonResourceWorkspace({
           topic={topic}
         />
       </section>
+      <PracticePanel courseId={course?.id || 0} nodeId="" topic={topic} token={token} />
       <LessonEvidencePanel knowledgeContext={knowledgeContext} />
     </div>
   );
