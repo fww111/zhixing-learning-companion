@@ -1277,6 +1277,60 @@ export async function requestDebugHint(
   }
 }
 
+/* ===== 随堂实战练习（学完即练 + 算法过程可视化） ===== */
+
+export interface PracticeStep {
+  array: number[];
+  highlight?: number[];
+  label?: string;
+}
+
+export interface PracticeVisualizationPayload {
+  type: string;
+  steps: PracticeStep[];
+}
+
+export interface PracticeExercisePayload {
+  id: string;
+  title: string;
+  description: string;
+  starter_code: string;
+  stdin_text: string;
+  expected_output: string;
+  hints: string[];
+  solution: string;
+  visualization: PracticeVisualizationPayload;
+  difficulty: string;
+  knowledge_point: string;
+  verified: boolean;
+  verify_message: string;
+  source: string;
+}
+
+export interface PracticeGenerateResultPayload {
+  course_id: number;
+  topic: string;
+  exercise: PracticeExercisePayload;
+}
+
+export async function generatePractice(
+  token: string | undefined,
+  courseId: number,
+  topic: string,
+  nodeId = "",
+  difficulty = ""
+): Promise<PracticeGenerateResultPayload> {
+  const response = await fetch(`/api/courses/${courseId}/practice/generate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeaders(token) },
+    body: JSON.stringify({ course_id: courseId, node_id: nodeId, topic, difficulty })
+  });
+  if (!response.ok) {
+    throw await apiError(response, "随堂实战出题失败");
+  }
+  return response.json();
+}
+
 export async function runCodeSubmission(
   token: string | undefined,
   courseId: number,
