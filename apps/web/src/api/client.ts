@@ -1170,6 +1170,28 @@ export interface CodeRunResultPayload {
   message: string;
 }
 
+/** 签发短时语音会话 JWT（issue #21，4h TTL） */
+export interface TutorVoiceSessionStart {
+  voice_session: string;
+  expires_in_seconds: number;
+}
+
+export async function startTutorVoiceSession(
+  token: string | undefined,
+  courseId: number,
+  nodeId = ""
+): Promise<TutorVoiceSessionStart> {
+  const response = await fetch("/api/tutor-voice/session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeaders(token) },
+    body: JSON.stringify({ course_id: courseId, node_id: nodeId })
+  });
+  if (!response.ok) {
+    throw await apiError(response, "语音会话创建失败");
+  }
+  return response.json();
+}
+
 export async function runCodeSubmission(
   token: string | undefined,
   courseId: number,

@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
-import { Bot, Image as ImageIcon, Mic, MicOff, Send, Volume2, VolumeX, Loader2, Sparkles } from "lucide-react";
+import { Bot, Image as ImageIcon, Mic, MicOff, Send, Volume2, VolumeX, Loader2, Sparkles , AudioLines, AudioWaveform, CircleStop } from "lucide-react";
 import {
   sendTutorMessage,
+  startTutorVoiceSession,
   type TutorAttachment,
 } from "../api/client";
 import {
@@ -12,6 +13,7 @@ import {
   type TutorAttachmentDraft,
 } from "../components/tutorAssistantModel";
 import { loadRuntimeMode, streamAgentArtsChat } from "../api/agentarts";
+import { useRealtimeVoice } from "../composables/useRealtimeVoice";
 import { getSharedAttention } from "../state/attentionShared";
 import { useAuth } from "../state/auth";
 
@@ -47,6 +49,14 @@ function textValue(value: unknown, fallback: string): string {
   return typeof value === "string" && value.trim() ? value : fallback;
 }
 
+const REALTIME_PHASE_LABELS: Record<string, string> = {
+  idle: "未连接",
+  connecting: "连接中",
+  listening: "聆听中",
+  thinking: "思考中",
+  speaking: "播报中"
+};
+
 /** 全屏 AI 对话大屏（issue：多模态对话界面）：文字 + 语音输入 + 图片多模态 + 回答语音朗读。 */
 export function TutorStagePage() {
   const { courseId, nodeId } = useParams();
@@ -66,6 +76,41 @@ export function TutorStagePage() {
   const [ttsEnabled, setTtsEnabled] = useState(false);
   // 连续语音对话模式：持续听写 -> 句尾自动发送 -> AI 回答自动开口讲 -> 说话时打断朗读
   const [voiceConversation, setVoiceConversation] = useState(false);
+  // 真·实时双向语音（issue #21）：AudioWorklet 采集 + Fun-ASR + 豆包流式 TTS，可打断
+  const [realtimeVoice, setRealtimeVoice] = useState(false);
+  const [voiceSessionToken, setVoiceSessionToken] = useState("");
+  const realtime = useRealtimeVoice({
+    token,
+    voiceSession: realtimeVoice ? voiceSessionToken : undefined,
+    onUserFinal: (text) => {
+      setMessages((items) => [...items, { id: `voice-user-${Date.now()}`, role: "user", content: text }]);
+    },
+    onAssistantFinal: (content) => {
+      appendAssistant(`voice-assistant-${Date.now()}`, content);
+    }
+  });
+
+  async function toggleRealtimeVoice() {
+    if (realtimeVoice) {
+      realtime.stop();
+      setRealtimeVoice(false);
+      return;
+    }
+    if (!Number.isFinite(numericCourseId) || !token) {
+      setNotice("请先进入具体课程后再使用实时语音。");
+      return;
+    }
+    try {
+      const session = await startTutorVoiceSession(token, numericCourseId, decodedNodeId);
+      setVoiceSessionToken(session.voice_session);
+      setRealtimeVoice(true);
+      await realtime.start();
+      setNotice("实时语音已开启：直接说话提问，AI 开口回答；播报中点击「打断」可随时插话。");
+    } catch (caught) {
+      setRealtimeVoice(false);
+      setError(caught instanceof Error ? caught.message : "实时语音启动失败");
+    }
+  }
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
