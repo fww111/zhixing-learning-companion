@@ -1,14 +1,16 @@
-import { ArrowLeft, BookOpenCheck, CheckCircle2, Code2, ListChecks, PlayCircle, RefreshCw, RotateCcw, ShieldAlert } from "lucide-react";
+import { ArrowLeft, BookOpenCheck, BrainCircuit, CheckCircle2, Code2, ListChecks, PlayCircle, RefreshCw, RotateCcw, ShieldAlert } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   getCourse,
   getKnowledgeGraph,
+  getReviewQueue,
   listLearningProfileEvents,
   submitAssessment,
   type Course,
   type KnowledgeGraph,
-  type LearningProfileEvent
+  type LearningProfileEvent,
+  type ReviewQueue
 } from "../api/client";
 import { executeCode } from "../components/codeExecutionModel";
 import { WrongQuestionTutorPanel } from "../components/WrongQuestionTutorPanel";
@@ -29,6 +31,7 @@ export function CourseWrongQuestionsPage() {
   const [course, setCourse] = useState<Course>();
   const [graph, setGraph] = useState<KnowledgeGraph>();
   const [events, setEvents] = useState<LearningProfileEvent[]>([]);
+  const [reviewQueue, setReviewQueue] = useState<ReviewQueue>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const model = useMemo(
@@ -44,14 +47,16 @@ export function CourseWrongQuestionsPage() {
     setLoading(true);
     setError("");
     try {
-      const [nextCourse, nextGraph, nextEvents] = await Promise.all([
+      const [nextCourse, nextGraph, nextEvents, nextReview] = await Promise.all([
         getCourse(token, numericCourseId),
         getKnowledgeGraph(token, numericCourseId),
-        listLearningProfileEvents(token, numericCourseId).catch(() => [])
+        listLearningProfileEvents(token, numericCourseId).catch(() => []),
+        getReviewQueue(token, numericCourseId).catch(() => undefined)
       ]);
       setCourse(nextCourse);
       setGraph(nextGraph);
       setEvents(nextEvents);
+      setReviewQueue(nextReview);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "加载错题集失败");
     } finally {
@@ -88,6 +93,32 @@ export function CourseWrongQuestionsPage() {
       </div>
 
       {error ? <div className="error">{error}</div> : null}
+
+      {reviewQueue && reviewQueue.stats.due_count ? (
+        <section className="panel wrong-book-review-banner">
+          <BrainCircuit size={18} />
+          <div>
+            <strong>记忆引擎提醒：{reviewQueue.stats.due_count} 个知识点今天到期复习</strong>
+            <p>
+              {reviewQueue.items.filter((item) => item.due_today).slice(0, 3).map((item) => item.topic).join("、")}
+              {reviewQueue.stats.high_risk_count ? `（含 ${reviewQueue.stats.high_risk_count} 个高危薄弱点）` : ""}。
+              按艾宾浩斯间隔重做能显著提升长期记忆。
+            </p>
+          </div>
+          <button
+            className="primary-action compact-button"
+            onClick={() => {
+              const first = reviewQueue.items.find((item) => item.due_today);
+              if (first) {
+                navigate(`/courses/${numericCourseId}/knowledge/${encodeURIComponent(first.node_id)}`);
+              }
+            }}
+            type="button"
+          >
+            开始复习
+          </button>
+        </section>
+      ) : null}
 
       <section className="wrong-book-summary-grid">
         <article className="panel metric-panel">

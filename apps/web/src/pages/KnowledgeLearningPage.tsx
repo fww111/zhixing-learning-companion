@@ -50,6 +50,7 @@ import {
   shouldUnlockPostClassroom
 } from "../components/postClassroomExperienceModel";
 import { executeCode } from "../components/codeExecutionModel";
+import { DebugMentorPanel } from "../components/DebugMentorPanel";
 import { CODE_RUN_FAILED_EVENT } from "../components/AttentionFloating";
 import { lessonCodeLabViewModel } from "./lessonCodeLabModel";
 import { buildLessonProfileEvent, type LessonTrackedAction } from "./learningProfileEventModel";
@@ -983,6 +984,7 @@ function InlineLessonCodeLab({
   const [attempts, setAttempts] = useState(0);
   const [running, setRunning] = useState(false);
   const [serverVerdict, setServerVerdict] = useState<string | null>(null);
+  const [runSnapshot, setRunSnapshot] = useState<{ verdict: string; stderr: string; compile_output: string; stdout: string } | null>(null);
 
   useEffect(() => {
     setCode(starter);
@@ -1008,6 +1010,11 @@ function InlineLessonCodeLab({
       const nextOutput = outcome.output;
       setOutput(nextOutput);
       setServerVerdict(outcome.verdict);
+      setRunSnapshot(
+        outcome.serverVerified
+          ? { verdict: outcome.verdict || "", stderr: outcome.output, compile_output: "", stdout: outcome.output }
+          : null
+      );
       const ok = outcome.serverVerified ? Boolean(outcome.passed) : isInlineCodeRunSuccessful(nextOutput);
       setPassed(ok);
       if (!ok) {
@@ -1065,6 +1072,22 @@ function InlineLessonCodeLab({
           <pre>{output}</pre>
           {passed ? <p className="auto-advance-note">服务端沙箱真实运行通过，已记录为本节课代码实践完成。</p> : null}
         </div>
+        {runSnapshot && runSnapshot.verdict !== "accepted" ? (
+          <DebugMentorPanel
+            courseId={course?.id || 0}
+            nodeId=""
+            topic={topic}
+            sourceCode={code}
+            runResult={runSnapshot}
+            token={token}
+            onApplyFix={(fixedCode) => {
+              if (fixedCode) {
+                setCode(fixedCode);
+                window.setTimeout(() => { void runCode(); }, 300);
+              }
+            }}
+          />
+        ) : null}
       </div>
     </div>
   );
