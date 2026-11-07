@@ -11,6 +11,7 @@ import {
   previewQuizScore
 } from "./assessmentModel";
 import { executeCode } from "./codeExecutionModel";
+import { CODE_RUN_FAILED_EVENT } from "./AttentionFloating";
 import { isInlineCodeRunSuccessful, runInlinePythonLikeCode } from "./postClassroomExperienceModel";
 
 interface AssessmentPanelProps {
@@ -109,6 +110,14 @@ export function AssessmentPanel({
         ? Boolean(outcome.passed)
         : isInlineCodeRunSuccessful(output) && codeAttemptMatchesChallenge(codeChallenge.expectedOutput, output);
       setCodePassed(nextPassed);
+      if (!nextPassed) {
+        // 双信号融合（issue #15）：评估编程题失败也纳入困惑介入信号
+        window.dispatchEvent(
+          new CustomEvent(CODE_RUN_FAILED_EVENT, {
+            detail: { summary: outcome.message || "评估编程题未通过" }
+          })
+        );
+      }
       if (nextPassed) {
         onCodePassed?.();
       }

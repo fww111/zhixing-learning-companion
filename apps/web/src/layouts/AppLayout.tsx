@@ -285,10 +285,11 @@ export function AppLayout() {
         <AttentionFloating
           activeCourseId={activeCourseId}
           nodeId={knowledgeNodeId}
-          onIntervene={({ nodeId, state }) => {
-            setInterventionMessage(
-              `我正在学习知识点「${nodeId}」，学习状态感知显示我处于「${state}」，请结合课程知识库换一种更直观的讲法：先讲直觉类比，再给一个可运行的 C++ 例子。`
-            );
+          onIntervene={({ nodeId, state, codeError, highConfidence }) => {
+            const codePart = highConfidence
+              ? `我的代码实验连续没跑通（最近错误：${codeError || "运行失败"}），请帮我看看代码哪里不对，再结合课程知识库和图谱前置约束换一种更直观的讲法：先讲直觉类比，再给一个可运行的 C++ 例子。`
+              : `我正在学习知识点「${nodeId}」，学习状态感知显示我处于「${state}」，请结合课程知识库换一种更直观的讲法：先讲直觉类比，再给一个可运行的 C++ 例子。`;
+            setInterventionMessage(codePart);
             setTutorOpenSignal((n) => n + 1);
           }}
           token={token}

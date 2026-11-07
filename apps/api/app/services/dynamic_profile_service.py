@@ -246,6 +246,8 @@ class DynamicProfileService:
             self._update_modality_profile(after, event, score, event_payload, changed)
         if event.event_type in {"lesson_completed", "assessment_submitted"}:
             self._update_growth_profile(after, event, score, changed)
+        if event.event_type == "attention_sample":
+            self._update_attention_sample_profile(after, event, topic, changed)
 
         reason = self._update_reason(event, score, topic)
         after["last_profile_update_reason"] = reason
@@ -423,6 +425,62 @@ class DynamicProfileService:
             order = [modality, *[item for item in order if item != modality]]
         profile["preferred_resource_order"] = order[:8]
         changed.add("preferred_resource_order")
+
+    def _update_attention_sample_profile(
+        self,
+        profile: dict[str, Any],
+        event: LearningProfileEvent,
+        topic: str,
+        changed: set[str],
+    ) -> None:
+        """issue #15：聚合专注度采样，困惑密集的知识点写入薄弱点证据。
+
+        每条 attention_sample 更新 attention_pattern.confused_by_node 计数；
+        当某知识点样本 ≥5 且困惑占比 ≥40% 时，把该知识点追加进 weak_points，
+        并写一条 medium 证据，供画像更新日志与学习路径补救规划使用。
+        """
+        payload = event.event_payload or {}
+        dominant = str(payload.get("dominant") or "").strip().lower()
+        if not dominant:
+            return
+
+        attention = dict(profile.get("attention_pattern") or {})
+        by_node = dict(attention.get("confused_by_node") or {})
+        node_key = event.knowledge_node_id or topic
+        node_stats = dict(by_node.get(node_key) or {"total": 0, "confused": 0})
+        node_stats["total"] = int(node_stats.get("total") or 0) + 1
+        if dominant == "confused":
+            node_stats["confused"] = int(node_stats.get("confused") or 0) + 1
+        by_node[node_key] = node_stats
+        attention["confused_by_node"] = by_node
+        attention["last_dominant"] = dominant
+        attention["last_sample_topic"] = topic
+        profile["attention_pattern"] = attention
+        changed.add("attention_pattern")
+
+        total = int(node_stats["total"])
+        confused = int(node_stats["confused"])
+        if total >= 5 and confused / total >= 0.4 and topic:
+            weak_points = self._list(profile.get("weak_points"))
+            if topic not in weak_points:
+                weak_points.append(topic)
+                profile["weak_points"] = weak_points
+                profile["learning_risk"] = self._risk(profile, "attention_confused_pattern")
+                changed.update({"weak_points", "learning_risk"})
+                # 用 updated_evidence 记录困惑证据（画像更新日志可见）
+                evidence = self._list(profile.get("updated_evidence"))
+                evidence.append(
+                    {
+                        "source": "attention_sample",
+                        "topic": topic,
+                        "detail": (
+                            f"知识点「{topic}」累计 {total} 次专注度采样中困惑占 {confused} 次"
+                            f"（{round(confused / total * 100)}%），判定为易卡难点并写入薄弱点。"
+                        ),
+                    }
+                )
+                profile["updated_evidence"] = evidence[-30:]
+                changed.add("updated_evidence")
 
     def _update_growth_profile(
         self,

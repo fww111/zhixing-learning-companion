@@ -108,7 +108,8 @@ export function TutorAssistantFloating({ courses, activeCourseId, openSignal = 0
           message: content,
           courseId: context.courseId,
           nodeId: context.nodeId,
-          history: messages.slice(-6).map((message) => ({ role: message.role, content: message.content }))
+          history: messages.slice(-6).map((message) => ({ role: message.role, content: message.content })),
+          attentionState: getSharedAttention()?.state ?? ""
         },
         {
           onDelta: (chunk) => {

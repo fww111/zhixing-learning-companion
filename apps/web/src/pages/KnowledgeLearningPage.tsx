@@ -50,6 +50,7 @@ import {
   shouldUnlockPostClassroom
 } from "../components/postClassroomExperienceModel";
 import { executeCode } from "../components/codeExecutionModel";
+import { CODE_RUN_FAILED_EVENT } from "../components/AttentionFloating";
 import { lessonCodeLabViewModel } from "./lessonCodeLabModel";
 import { buildLessonProfileEvent, type LessonTrackedAction } from "./learningProfileEventModel";
 import {
@@ -1009,6 +1010,14 @@ function InlineLessonCodeLab({
       setServerVerdict(outcome.verdict);
       const ok = outcome.serverVerified ? Boolean(outcome.passed) : isInlineCodeRunSuccessful(nextOutput);
       setPassed(ok);
+      if (!ok) {
+        // 双信号融合（issue #15）：代码失败广播给状态感知，困惑×连续失败触发高置信介入
+        window.dispatchEvent(
+          new CustomEvent(CODE_RUN_FAILED_EVENT, {
+            detail: { summary: outcome.message || outcome.output?.slice(0, 80) || "代码运行失败" }
+          })
+        );
+      }
       onCodeRun({ attempts: nextAttempts, code, output: nextOutput, passed: ok, serverVerdict: outcome.verdict });
       if (ok) {
         onCodePassed();

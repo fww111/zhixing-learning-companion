@@ -36,7 +36,28 @@ class AgentArtsChatRequest(BaseModel):
     course_id: int | None = None
     node_id: str | None = None
     history: list[AgentArtsHistoryMessage] = Field(default_factory=list)
+    # 学习状态感知（issue #15 AgentArts 兼容）：focused/confused/distracted/tired/no_face
+    attention_state: str = ""
     extra: dict[str, Any] = Field(default_factory=dict)
+
+
+ATTENTION_HINTS = {
+    "confused": "[学习状态感知]学生当前处于困惑状态：请先用直觉类比讲清核心，再进入推导，语气更耐心。",
+    "distracted": "[学习状态感知]学生注意力有些分散：开头温和地把注意力拉回当前知识点，不要说教。",
+    "tired": "[学习状态感知]学生已经比较疲劳：建议先做一道短练习或稍作休息再继续。",
+}
+VALID_ATTENTION_STATES = {"focused", "confused", "distracted", "tired", "no_face"}
+
+
+def normalize_attention_state(raw: str | None) -> tuple[str, str]:
+    """issue #15：清洗前端上报的专注状态，返回 (合法状态, 消息前缀提示)。
+
+    非法/空值返回 ("", "")，不下发也不提示。
+    """
+    state = (raw or "").strip().lower()
+    if state not in VALID_ATTENTION_STATES:
+        return "", ""
+    return state, ATTENTION_HINTS.get(state, "")
 
 
 def _sse_error(message: str, detail: str) -> bytes:
@@ -68,6 +89,13 @@ async def agentarts_chat(
         global_variables["course_id"] = payload.course_id
     if payload.node_id is not None:
         global_variables["node_id"] = payload.node_id
+    # 专注状态注入平台全局变量（issue #15 AgentArts 模式兼容），
+    # 工作流节点可直接引用 attention_state 调整讲解策略
+    attention_state, state_hint = normalize_attention_state(payload.attention_state)
+    if attention_state:
+        global_variables["attention_state"] = attention_state
+    if state_hint:
+        messages.insert(0, {"role": "system", "content": state_hint})
 
     platform_payload: dict[str, Any] = {
         "messages": messages,
