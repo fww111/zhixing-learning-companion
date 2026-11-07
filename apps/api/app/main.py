@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import sessionmaker
 
 from app.db import SessionLocal, get_db, init_db
-from app.routers import agentarts_proxy, assessments, auth, chat, coderun, courses, edge_tts, kb_evaluations, paths, profiles, resources, tts, tutor, wrong_question_tutor
+from app.routers import agentarts_proxy, assessments, auth, chat, coderun, courses, edge_tts, kb_evaluations, paths, profiles, resources, tts, tutor, voice_ws, wrong_question_tutor
 from app.services.material_task_queue import MaterialTaskQueue
 
 
@@ -55,6 +55,7 @@ def create_app(session_factory: sessionmaker | None = None) -> FastAPI:
     app.include_router(tutor.router)
     app.include_router(wrong_question_tutor.router)
     app.include_router(coderun.router)
+    app.include_router(voice_ws.router)
 
     @app.get("/health")
     async def health() -> dict[str, str]:

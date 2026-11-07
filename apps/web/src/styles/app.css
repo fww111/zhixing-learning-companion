@@ -9935,3 +9935,23 @@ textarea {
   margin: 12px 0 0;
   padding: 10px 14px;
 }
+
+/* 实时语音字幕条（issue #21） */
+.realtime-caption {
+  align-items: center;
+  background: rgba(17, 24, 52, 0.72);
+  border: 1px solid var(--engine-border-glow);
+  border-radius: var(--radius-md);
+  box-shadow: var(--engine-glow);
+  color: var(--engine-text);
+  display: flex;
+  font-size: 14px;
+  font-weight: 700;
+  gap: 9px;
+  padding: 12px 16px;
+}
+
+.realtime-caption svg {
+  color: var(--engine-accent-2);
+  flex-shrink: 0;
+}

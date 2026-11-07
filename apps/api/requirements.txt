@@ -43,3 +43,7 @@ pytest>=8,<10
 
 # Edge TTS（真人音色语音合成，对话大屏朗读）
 edge-tts>=6.1,<8
+
+# 实时语音（issue #21）：websockets 由 uvicorn[standard] 携带，用于豆包双向 TTS 客户端；
+# dashscope 为 Fun-ASR 实时识别 SDK（懒加载，未配置 DASHSCOPE_API_KEY 时自动降级 mock）
+dashscope>=1.20,<2
